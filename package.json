@@ -1,6 +1,6 @@
 {
   "name": "charleston-engine",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "American Mahjongg 2026 NMJL Charleston analysis engine — offline, pure-JS study core",
   "type": "commonjs",
   "main": "index.js",
@@ -14,9 +14,10 @@
   },
   "scripts": {
     "build:engine": "esbuild index.js --bundle --format=esm --minify --outfile=dist/charleston-engine.esm.js",
+    "build:global": "esbuild index.js --bundle --format=iife --global-name=CharlestonEngine --minify --outfile=dist/charleston-engine.global.js",
     "build:worker": "esbuild compute.worker.js --bundle --format=iife --minify --outfile=dist/compute.worker.js",
     "build:client": "esbuild engine-client.js --bundle --format=esm --minify --outfile=dist/engine-client.esm.js",
-    "build": "npm run build:engine && npm run build:worker && npm run build:client",
+    "build": "npm run build:engine && npm run build:global && npm run build:worker && npm run build:client",
     "test": "node testA.js && node testD.js && node testM0.js"
   },
   "dependencies": {

@@ -38,7 +38,7 @@ function newSession(opts = {}) {
   const observations = [[], [], [], []];
   const ledger = LED.newLedger();
   const seq = [{ d: 'R', r: 1 }, { d: 'A', r: 1 }, { d: 'L', r: 1, blind: true }];
-  let idx = 0, phase = 'pass', ranR2 = false, done = false;
+  let idx = 0, phase = 'pass', ranR2 = false, done = false, lastReceived = null;
 
   function oppPass(s, dir) {
     const pv = { seat: s, ownRack: racks[s].slice(), observations: observations[s].slice(), publicState: { passIndex: idx, round: seq[idx].r, direction: dir } };
@@ -47,16 +47,28 @@ function newSession(opts = {}) {
     return p;
   }
 
-  function applyPass(my3, received3) {
+  // blind=true (only on a blind-eligible step) relays the 3 tiles you received on the
+  // prior pass, unseen, keeping your own hand intact (§4.5). Human action only —
+  // sim opponents keep their normal policy (no recalibration).
+  function applyPass(my3, received3, blind) {
     if (phase !== 'pass') throw new Error('not at a pass step (phase=' + phase + ')');
     const step = seq[idx], dir = step.d;
-    const my = dealer.sanitizePass(racks[0], my3);
-    for (const t of my) racks[0].splice(racks[0].indexOf(t), 1);
+    if (blind && !step.blind) throw new Error('blind pass not allowed on this step');
+
+    let my;
+    if (blind) {
+      my = (lastReceived || []).filter(t => t !== 'JK').slice(0, 3);
+      if (my.length !== 3) throw new Error('blind pass needs 3 prior-received tiles');
+      for (const t of my) racks[0].splice(racks[0].indexOf(t), 1);
+    } else {
+      my = dealer.sanitizePass(racks[0], my3);
+      for (const t of my) racks[0].splice(racks[0].indexOf(t), 1);
+    }
 
     let recv;
     if (mode === 'sim') {
       const outgoing = [my, oppPass(1, dir), oppPass(2, dir), oppPass(3, dir)];
-      for (let s = 0; s < 4; s++) { const j = NB[dir](s); for (const t of outgoing[s]) racks[j].push(t); observations[j].push({ fromSeat: s, direction: dir, passIndex: idx, tiles: outgoing[s].slice() }); }
+      for (let s = 0; s < 4; s++) { const j = NB[dir](s); for (const t of outgoing[s]) racks[j].push(t); observations[j].push({ fromSeat: s, direction: dir, passIndex: idx, tiles: outgoing[s].slice(), blind: s === 0 ? !!blind : false }); }
       recv = observations[0].filter(o => o.passIndex === idx)[0].tiles.slice();
     } else {
       if (!received3 || received3.length !== 3) throw new Error('manual mode: supply the 3 tiles you received');
@@ -66,10 +78,10 @@ function newSession(opts = {}) {
     LED.decayAll(ledger);
     LED.recordPass(ledger, NB[dir](0), my, idx);
     LED.recordReceive(ledger, RECV[dir](0), recv, idx);
+    lastReceived = recv.slice();
     idx++;
-    if (idx >= seq.length) phase = ranR2 ? 'done' : 'stop';
-    if (phase === 'done') done = true;
-    return { received: recv, ownRack: racks[0].slice(), passed: my };
+    if (idx >= seq.length) phase = ranR2 ? 'courtesy' : 'stop';
+    return { received: recv, ownRack: racks[0].slice(), passed: my, blind: !!blind };
   }
 
   // R2 decision after R1. In sim mode opponents vote; R2 runs only if ALL continue.
@@ -81,8 +93,41 @@ function newSession(opts = {}) {
       proceed = proceed && !votesStop;
     }
     if (proceed) { seq.push({ d: 'L', r: 2 }, { d: 'A', r: 2 }, { d: 'R', r: 2, blind: true }); ranR2 = true; phase = 'pass'; }
-    else { phase = 'done'; done = true; }
+    else { phase = 'courtesy'; }
     return { ranR2: proceed };
+  }
+
+  // Courtesy pass: optional 0–3 across (seat 0 ↔ seat 2), the final Charleston step.
+  // You choose tiles (never blind); the effective count is min(your offer, partner's offer).
+  function courtesy(myTiles, received3) {
+    if (phase !== 'courtesy') throw new Error('not at the courtesy step');
+    const across = 2;
+    let recv = [], k = 0;
+    if (mode === 'sim') {
+      const view = a => ({ seat: a, ownRack: racks[a].slice(), observations: observations[a].slice(), publicState: {} });
+      const offer = (policies[across] && policies[across].courtesyOffer) ? policies[across].courtesyOffer(view(across)) : 3;
+      const mine = dealer.sanitizePass(racks[0], myTiles || []);
+      k = Math.max(0, Math.min(3, (myTiles || []).length, mine.length, offer));
+      if (k > 0) {
+        const give = mine.slice(0, k);
+        for (const t of give) racks[0].splice(racks[0].indexOf(t), 1);
+        const theirs = dealer.sanitizePass(racks[across], policies[across].selectPass(view(across))).slice(0, k);
+        for (const t of theirs) racks[across].splice(racks[across].indexOf(t), 1);
+        for (const t of give) racks[across].push(t);
+        for (const t of theirs) racks[0].push(t);
+        recv = theirs.slice();
+        LED.decayAll(ledger); LED.recordPass(ledger, across, give, idx); LED.recordReceive(ledger, across, recv, idx);
+      }
+    } else {
+      const mine = dealer.sanitizePass(racks[0], myTiles || []);
+      const got = (received3 || []).slice();
+      k = Math.min((myTiles || []).length, mine.length, got.length, 3);
+      const give = mine.slice(0, k); recv = got.slice(0, k);
+      for (const t of give) racks[0].splice(racks[0].indexOf(t), 1);
+      for (const t of recv) racks[0].push(t);
+    }
+    phase = 'done'; done = true;
+    return { count: k, received: recv, ownRack: racks[0].slice() };
   }
 
   function state() {
@@ -99,7 +144,7 @@ function newSession(opts = {}) {
   // teaching/replay ONLY (sim mode): the legitimate place for full state (§7.4)
   function revealForReplay() { return mode === 'sim' ? { racks: racks.map(r => r.slice()) } : null; }
 
-  return { mode, applyPass, decideR2, state, ledger, revealForReplay };
+  return { mode, applyPass, decideR2, courtesy, state, ledger, revealForReplay };
 }
 
 module.exports = { newSession };
