@@ -2,7 +2,7 @@
  * Keep in sync with package.json "version". Stamps the number (only) into any
  * element with class "app-version". */
 (function () {
-  var V = '1.0.0';
+  var V = '1.0.1';
   if (typeof module !== 'undefined' && module.exports) { module.exports = V; return; }
   window.APP_VERSION = V;
   function stamp() {

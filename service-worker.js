@@ -1,10 +1,16 @@
 /* M1 — service worker: cache the app shell + engine for FULL offline study use.
  * Cache-first for shell assets (they're versioned by CACHE name); network fallback.
  */
-const CACHE = 'charleston-lab-v1';
+/* Cache name is tied to the app VERSION below — bump it on every code change so
+ * returning devices discard the stale cache and re-fetch the shell. Keep VERSION
+ * in sync with version.js / package.json. */
+const VERSION = '1.0.1';
+const CACHE = 'charleston-lab-' + VERSION;
 const SHELL = [
   './app.mobile.html',
   './app.js',
+  './tilefaces.js',
+  './version.js',
   './dist/charleston-engine.global.js',
   './manifest.webmanifest',
   './icon.svg',
