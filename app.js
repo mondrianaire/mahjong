@@ -203,10 +203,18 @@
   var CARDCOL = { green: '#2f7d44', red: '#b83227', blue: '#2660a4', black: '#5f5e5a' };
   function setCardStat() { var e = el('cardstat'); if (e) e.textContent = realCard ? '2026 ✓' : 'illustrative'; var b = el('loadcard'); if (b) b.textContent = realCard ? 'View card' : '2026 card'; }
   function rerenderCurrent() { if (sess) syncSession(); else if (rack) { renderReads(); reRenderAction(); } }
+  function resetViews() {
+    rack = null; sess = null; selected = []; curPass = 0; practice = false; adviceByTile = {};
+    el('ledger').classList.add('hidden'); el('ledger').innerHTML = '';
+    el('dir').innerHTML = '<div class="empty">Deal or build a hand to begin.</div>';
+    el('pwin').textContent = '—'; el('hands').innerHTML = '<div class="empty">—</div>';
+    el('builder').innerHTML = '<div class="empty">—</div>'; el('rack').innerHTML = '<div class="empty">No hand yet.</div>';
+    el('rackcount').textContent = ''; el('tempo').textContent = realCard ? 'Real 2026 card loaded — deal or build a hand' : '';
+  }
   function doLoadCard() {
     var pw = el('cardpw').value; if (!pw) return; el('carderr').textContent = 'unlocking…';
     fetch('./card-2026.enc.json').then(function (r) { return r.json(); }).then(function (blob) { return window.CardCrypto.decrypt(blob, pw); })
-      .then(function (txt) { cardPayload = JSON.parse(txt); var targets = window.CardInterp.expandCard(cardPayload); E.engine.setTargets(targets); realCard = true; el('carderr').textContent = ''; el('cardpad').classList.add('hidden'); setCardStat(); rerenderCurrent(); openCardView(); })
+      .then(function (txt) { cardPayload = JSON.parse(txt); var targets = window.CardInterp.expandCard(cardPayload); E.engine.setTargets(targets); realCard = true; el('carderr').textContent = ''; el('cardpad').classList.add('hidden'); resetViews(); setCardStat(); openCardView(); })
       .catch(function () { el('carderr').textContent = 'Wrong password or card failed to load.'; });
   }
   function noteHTML(alt) { return '<span class="note">' + alt.map(function (g) { return '<span style="color:' + (CARDCOL[g.color] || '#5f5e5a') + ';font-weight:700">' + g.tiles + '</span>'; }).join(' ') + '</span>'; }
