@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#b8862a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="apple-touch-icon" href="./icon.svg">
+<title>Charleston Lab — Study</title>
+<style>
+  :root{--bg:#f4efe6;--panel:#fffdf8;--ink:#241f1a;--muted:#7a7066;--line:#e3d9c8;
+    --bam:#2f7d44;--crak:#b83227;--dot:#2660a4;--soap:#6b6f76;--wind:#4a3f8f;--flower:#c2780a;--joker:#8a3ea0;
+    --accent:#b8862a;--good:#2f7d44;--warn:#b8702a;--bad:#b83227;}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.45;padding:env(safe-area-inset-top) env(safe-area-inset-right) calc(env(safe-area-inset-bottom) + 12px) env(safe-area-inset-left)}
+  header{position:sticky;top:0;z-index:5;background:var(--bg);display:flex;align-items:center;justify-content:space-between;
+    gap:10px;padding:12px 16px 8px;border-bottom:1px solid var(--line)}
+  header h1{font-size:17px;margin:0}header h1 b{color:var(--accent)}
+  .stepbar{display:flex;gap:6px;align-items:center;padding:8px 16px;font-size:12px;color:var(--muted);overflow-x:auto;white-space:nowrap}
+  .dot{width:9px;height:9px;border-radius:50%;background:#dccfb4;display:inline-block}.dot.on{background:var(--accent)}
+  main{padding:12px 14px 0}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px;box-shadow:0 1px 3px rgba(60,45,20,.1)}
+  .card h2{font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin:0 0 9px;font-weight:700;display:flex;justify-content:space-between}
+  .card h2 .z{color:var(--accent)}
+  button{font:inherit;font-weight:700;border:1px solid var(--accent);background:var(--accent);color:#fff;
+    padding:11px 16px;border-radius:10px;min-height:44px;cursor:pointer}
+  button.ghost{background:#fff;color:var(--ink);border-color:var(--line)}
+  .dirbar{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:14px}.dirbar .nm{width:62px;font-weight:700}
+  .bar{height:11px;background:#e8dfce;border-radius:6px;flex:1;overflow:hidden}.bar span{display:block;height:100%;background:var(--accent)}
+  .big{font-size:34px;font-weight:800;line-height:1}.muted{color:var(--muted);font-size:12.5px}
+  .tiles{display:flex;flex-wrap:wrap;gap:7px}
+  .tile{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;width:13vw;max-width:52px;height:18vw;max-height:66px;
+    border-radius:9px;background:#fff;border:2px solid #d8cdb8}
+  .tile .num{font-size:5.2vw;max-font-size:22px;font-weight:800;line-height:1}.tile .suit{font-size:8px;text-transform:uppercase;color:var(--muted);margin-top:2px}
+  .tile.bam .num{color:var(--bam)}.tile.crak .num{color:var(--crak)}.tile.dot .num{color:var(--dot)}.tile.wind .num{color:var(--wind)}
+  .tile.dragon .num{font-size:3.2vw}.tile.dragon.g .num{color:var(--bam)}.tile.dragon.r .num{color:var(--crak)}.tile.dragon.w .num{color:var(--soap)}
+  .tile.flower .num{color:var(--flower)}.tile.joker .num{color:var(--joker);font-size:3.2vw}
+  table{width:100%;border-collapse:collapse;font-size:13px}td,th{text-align:left;padding:5px 4px;border-bottom:1px solid var(--line)}
+  th{font-size:9px;text-transform:uppercase;color:var(--muted)}
+  .prov{font-size:10.5px;color:var(--muted);margin-top:6px}.empty{color:var(--muted);font-size:13px;text-align:center;padding:18px 0}
+  #offline{font-size:11px;color:var(--good)}
+</style>
+</head>
+<body>
+  <header>
+    <h1>Charleston <b>Lab</b></h1>
+    <div style="display:flex;gap:8px;align-items:center">
+      <span id="offline"></span>
+      <button id="deal">Deal a hand</button>
+    </div>
+  </header>
+  <div class="stepbar" id="stepbar"><span class="dot on"></span> Practice · analyze a starting hand</div>
+  <main id="cards">
+    <div class="card"><div class="empty">Tap <b>Deal a hand</b> to study a starting rack — works fully offline.</div></div>
+  </main>
+  <script src="./dist/charleston-engine.global.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>

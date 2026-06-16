@@ -1,0 +1,19 @@
+# dependencies
+node_modules/
+
+# scratch / temp build leftovers
+_blk*.js
+
+# large generated corpora (regenerate: node fit_corpus.js / node study.js)
+corpus.csv
+results.csv
+
+# os / editor
+.DS_Store
+*.log
+.vscode/
+.idea/
+
+# NOTE: dist/ IS committed on purpose so the PWA runs without a build step.
+# To treat builds as artifacts instead, uncomment:
+# dist/

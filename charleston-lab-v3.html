@@ -1,0 +1,1796 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Charleston Lab v3 — Control Panel (2026 NMJL)</title>
+<style>
+  :root{--bg:#f4efe6;--panel:#fffdf8;--ink:#241f1a;--muted:#7a7066;--line:#e3d9c8;
+    --bam:#2f7d44;--crak:#b83227;--dot:#2660a4;--soap:#6b6f76;--wind:#4a3f8f;--flower:#c2780a;--joker:#8a3ea0;
+    --accent:#b8862a;--good:#2f7d44;--warn:#b8702a;--bad:#b83227;--shadow:0 1px 3px rgba(60,45,20,.12);}
+  *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.5}
+  .wrap{max-width:1180px;margin:0 auto;padding:20px 18px 80px}
+  header.top{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;border-bottom:2px solid var(--accent);padding-bottom:12px;margin-bottom:16px}
+  header.top h1{font-size:20px;margin:0}.tag{color:var(--muted);font-size:12px}
+  .grid{display:grid;grid-template-columns:1.4fr 1fr;gap:16px}@media(max-width:900px){.grid{grid-template-columns:1fr}}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;box-shadow:var(--shadow);margin-bottom:16px}
+  h2{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin:0 0 10px;font-weight:700;display:flex;justify-content:space-between}
+  h2 .z{color:var(--accent)}
+  button{font:inherit;font-weight:600;border:1px solid var(--accent);background:var(--accent);color:#fff;padding:7px 13px;border-radius:8px;cursor:pointer}
+  button.ghost{background:#fff;color:var(--ink);border-color:var(--line)}button:disabled{opacity:.45;cursor:not-allowed}
+  .seg{display:inline-flex;border:1px solid var(--accent);border-radius:8px;overflow:hidden}
+  .seg button{border:0;border-radius:0;background:#fff;color:var(--ink);padding:6px 12px}.seg button.on{background:var(--accent);color:#fff}
+  .tile{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;width:44px;height:56px;border-radius:8px;background:#fff;border:2px solid #d8cdb8;cursor:pointer;position:relative}
+  .tile .num{font-size:21px;font-weight:800;line-height:1}.tile .suit{font-size:8px;text-transform:uppercase;color:var(--muted);margin-top:2px}
+  .tile.sm{width:34px;height:44px}.tile.sm .num{font-size:17px}
+  .tile.bam .num{color:var(--bam)}.tile.crak .num{color:var(--crak)}.tile.dot .num{color:var(--dot)}.tile.wind .num{color:var(--wind);font-size:17px}
+  .tile.dragon .num{font-size:11px}.tile.dragon.g .num{color:var(--bam)}.tile.dragon.r .num{color:var(--crak)}.tile.dragon.w .num{color:var(--soap)}
+  .tile.flower .num{color:var(--flower);font-size:15px}.tile.joker .num{color:var(--joker);font-size:11px}
+  .tile.KEEP{border-color:var(--good)}.tile.PASS{border-color:var(--bad)}.tile.FLEX{border-color:var(--warn)}
+  .tile.sel{box-shadow:0 0 0 3px rgba(184,134,42,.4);transform:translateY(-3px)}
+  .tray{display:flex;flex-wrap:wrap;gap:7px}
+  .dirbar{display:flex;align-items:center;gap:8px;margin-bottom:5px;font-size:13px}.dirbar .nm{width:64px;font-weight:700}
+  .bar{height:10px;background:#e8dfce;border-radius:6px;flex:1;overflow:hidden}.bar span{display:block;height:100%;background:var(--accent)}
+  .muted{color:var(--muted);font-size:12.5px}.big{font-size:15px;font-weight:800}
+  .seat{border:1px solid var(--line);border-radius:9px;padding:9px;margin-bottom:8px;background:#fbf7ee}
+  .seat .hd{font-weight:700;font-size:12px;margin-bottom:5px}
+  .chips{display:flex;flex-wrap:wrap;gap:4px;margin:3px 0}
+  .ledchip{font-size:11px;border:1px solid var(--line);border-radius:6px;padding:2px 6px;background:#fff}
+  .ledchip.faded{opacity:.5;border-style:dashed}
+  .lean{font-size:11.5px;color:var(--muted)}.notcol{font-size:11.5px;color:var(--bad)}
+  .rec{background:#f1f7ee;border:1px solid var(--good);border-radius:8px;padding:8px;margin-top:8px;font-size:13px}
+  .explain{font-size:11.5px;color:var(--muted);margin-top:2px;display:none}.tilewrap.open .explain{display:block}
+  .tilewrap{border:1px solid var(--line);border-radius:8px;padding:6px;width:122px}
+  table{width:100%;border-collapse:collapse;font-size:12.5px}td,th{text-align:left;padding:4px 6px;border-bottom:1px solid var(--line)}
+  th{font-size:9px;text-transform:uppercase;color:var(--muted)}
+  .pill{font-size:9px;padding:1px 6px;border-radius:20px;background:#efe6d2;color:var(--muted)}.pill.best{background:var(--good);color:#fff}.pill.dead{background:#e8dfce}
+  .prov{font-size:10.5px;color:var(--muted);margin-top:6px}.empty{color:var(--muted);font-size:13px}
+</style></head>
+<body><div class="wrap">
+  <header class="top"><h1>Charleston Lab <span style="color:var(--accent)">v3</span> · Control Panel</h1>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      <span class="seg" id="obj"><button data-o="WINS" class="on">Wins</button><button data-o="POINTS">Points</button></span>
+      <button id="new">New session</button><span class="tag" id="tempo"></span></div></header>
+  <div class="grid">
+    <div>
+      <div class="panel"><h2>Direction Compass <span class="z">Zone 1</span></h2><div id="dir"><div class="empty">Start a session.</div></div></div>
+      <div class="panel"><h2>Hand Portfolio <span class="z">Zone 2</span></h2><div id="portfolio"><div class="empty">—</div></div></div>
+      <div class="panel"><h2>Tile Tray — keep / pass / flex <span class="z">Zone 3</span></h2><div id="tray"><div class="empty">—</div></div>
+        <div class="muted" id="trayhint" style="margin-top:8px"></div></div>
+      <div class="panel"><h2>Pass Builder <span class="z">Zone 4</span></h2><div id="builder"><div class="empty">—</div></div></div>
+    </div>
+    <div>
+      <div class="panel"><h2>Information Ledger <span class="z">Zone 5</span></h2><div id="ledger"><div class="empty">Tiles you hand out are tracked here.</div></div>
+        <div class="prov">Solid = you handed it over (fact). Faded = belief they still hold it (decays ≈0.77/pass). Section lean is greyed — measured ≈ chance during the Charleston; trust the "not collecting" read.</div></div>
+      <div class="panel"><h2>Tempo &amp; State <span class="z">Zone 6</span></h2><div id="state"><div class="empty">—</div></div></div>
+    </div>
+  </div>
+</div>
+<script>
+var __modules={}, __cache={};
+function require(name){ if(__cache[name]) return __cache[name].exports; var m={exports:{}}; __cache[name]=m; __modules[name](m, m.exports, require); return m.exports; }
+__modules['./engine.js'] = function(module, exports, require){
+/* =====================================================================
+ * American Mahjongg — Charleston Hand-Strength Engine
+ * 2026 NMJL card. Target metric: P(reach mahjong) under a solo model.
+ *
+ * Tile codes (physical tiles, 152 total):
+ *   Numbers : "1B".."9B", "1C".."9C", "1D".."9D"   (4 each = 108)
+ *   Dragons : "DG"(green->Bam) "DR"(red->Crak) "DW"(white/soap->Dot) (4 each = 12)
+ *   Winds   : "WN" "WE" "WW" "WS"                   (4 each = 16)
+ *   Flower  : "FL"                                  (8)
+ *   Joker   : "JK"                                  (8)
+ *
+ * A "target" is one concrete 14-tile winning hand: an array of groups
+ *   { tile, count, jokerable }  where jokerable = (count >= 3).
+ * A card LINE expands into many targets (number params x suit assignment
+ *   x dragon choice). The whole card expands to a flat TARGETS list.
+ * ===================================================================== */
+
+(function (root) {
+  'use strict';
+
+  const SUITS = ['B', 'C', 'D'];
+  const DRAGON_OF = { B: 'DG', C: 'DR', D: 'DW' };        // suit -> matching dragon
+  const ALL_DRAGONS = ['DG', 'DR', 'DW'];
+
+  // ---- full physical tile pool (152) -------------------------------------
+  function fullPool() {
+    const m = new Map();
+    for (const s of SUITS) for (let n = 1; n <= 9; n++) m.set(n + s, 4);
+    for (const d of ALL_DRAGONS) m.set(d, 4);
+    for (const w of ['WN', 'WE', 'WW', 'WS']) m.set(w, 4);
+    m.set('FL', 8);
+    m.set('JK', 8);
+    return m;
+  }
+
+  // ---- small combinatorial helpers ---------------------------------------
+  function injections(roles, pool) {
+    // all injective maps roles[] -> pool[] (distinct). returns array of {role:suit}
+    if (roles.length === 0) return [{}];
+    const res = [];
+    const rec = (i, used, acc) => {
+      if (i === roles.length) { res.push(Object.assign({}, acc)); return; }
+      for (const s of pool) {
+        if (used.has(s)) continue;
+        used.add(s); acc[roles[i]] = s;
+        rec(i + 1, used, acc);
+        used.delete(s); delete acc[roles[i]];
+      }
+    };
+    rec(0, new Set(), {});
+    return res;
+  }
+  function product(arrs) {
+    return arrs.reduce((acc, a) => {
+      const out = [];
+      for (const prev of acc) for (const x of a) out.push(prev.concat([x]));
+      return out;
+    }, [[]]);
+  }
+
+  // ---- group shorthands (pre-suit-assignment) ----------------------------
+  const num  = (n, role, c) => ({ k: 'num',  n, role, c });
+  const soap = (c)          => ({ k: 'soap', c });            // white dragon as 0
+  const wnd  = (w, c)       => ({ k: 'wind', w, c });
+  const flw  = (c)          => ({ k: 'flow', c });
+  const Dm   = (role, c)    => ({ k: 'drg', mode: 'match', role, c }); // dragon matches role's suit
+  const Dopp = (role, c)    => ({ k: 'drg', mode: 'opp',   role, c }); // dragon of a suit != role
+  const Dany = (c)          => ({ k: 'drg', mode: 'any',   c });
+
+  // ---- expand one card line into concrete targets ------------------------
+  function expandLine(line) {
+    const out = [];
+    const seen = new Set();
+    for (const groups of line.gen()) {
+      const roleSet = new Set();
+      for (const g of groups) if (g.role != null) roleSet.add(g.role);
+      const roles = [...roleSet];
+
+      for (const sa of injections(roles, SUITS)) {
+        // resolve dragon choices
+        const dragonGroups = groups.filter(g => g.k === 'drg');
+        const optsPer = dragonGroups.map(g => {
+          if (g.mode === 'match') return [DRAGON_OF[sa[g.role]]];
+          if (g.mode === 'opp')   return ALL_DRAGONS.filter(d => d !== DRAGON_OF[sa[g.role]]);
+          return ALL_DRAGONS.slice(); // any
+        });
+        let combos = product(optsPer);
+        if (line.dragonDistinct) {
+          combos = combos.filter(c => new Set(c).size === c.length);
+        }
+        if (dragonGroups.length === 0) combos = [[]];
+
+        for (const combo of combos) {
+          const concrete = [];
+          let di = 0;
+          for (const g of groups) {
+            let tile;
+            if (g.k === 'num') tile = g.n + sa[g.role];
+            else if (g.k === 'soap') tile = 'DW';
+            else if (g.k === 'wind') tile = 'W' + g.w;
+            else if (g.k === 'flow') tile = 'FL';
+            else if (g.k === 'drg') tile = combo[di++];
+            concrete.push({ tile, count: g.c, jokerable: g.c >= 3 });
+          }
+          const total = concrete.reduce((s, x) => s + x.count, 0);
+          if (total !== 14) throw new Error(`Line ${line.section}/${line.name} sums to ${total}, not 14`);
+          const key = concrete.map(x => x.tile + ':' + x.count + (x.jokerable ? 'J' : 'p')).sort().join('|');
+          if (seen.has(key)) continue;
+          seen.add(key);
+          out.push({ section: line.section, name: line.name, groups: concrete });
+        }
+      }
+    }
+    return out;
+  }
+
+  // ---- joker-aware coverage ---------------------------------------------
+  // returns max number of the target's 14 slots fillable from (poolMap real
+  // tiles + `jokers` joker tiles). Non-jokerable groups (pairs/singles) need
+  // real tiles; groups of 3+ may use jokers for the remainder.
+  function coverage(target, poolMap, jokers) {
+    let jk = jokers, filled = 0;
+    const local = new Map();
+    // sort: non-jokerable first so pairs/singles win real tiles
+    const gs = target.groups.slice().sort((a, b) => (a.jokerable ? 1 : 0) - (b.jokerable ? 1 : 0));
+    for (const g of gs) {
+      let need = g.count;
+      const used = local.get(g.tile) || 0;
+      const have = (poolMap.get(g.tile) || 0) - used;
+      const useReal = Math.min(have, need);
+      local.set(g.tile, used + useReal);
+      need -= useReal; filled += useReal;
+      if (g.jokerable && need > 0) {
+        const useJ = Math.min(jk, need);
+        jk -= useJ; need -= useJ; filled += useJ;
+      }
+    }
+    return filled;
+  }
+
+  // split a 13/14-tile hand (array of tile codes) into {pool:Map(real), jokers:int}
+  function handPool(tiles) {
+    const m = new Map(); let j = 0;
+    for (const t of tiles) {
+      if (t === 'JK') { j++; continue; }
+      m.set(t, (m.get(t) || 0) + 1);
+    }
+    return { pool: m, jokers: j };
+  }
+
+  function tilesNeeded(target, hp) {
+    return 14 - coverage(target, hp.pool, hp.jokers);
+  }
+
+  // ======================================================================
+  //  THE 2026 CARD
+  //  Suit roles: integers 0/1/2. "suits" = number of distinct suits used.
+  //  Where the printed card's colour partition is ambiguous from text, a
+  //  reasonable partition is chosen and noted with  // ~role-inferred.
+  // ======================================================================
+  const CARD = [];
+  const add = (o) => CARD.push(o);
+  const ONCE = function* (groups) { yield groups; };
+
+  // helpers for number schemes
+  function* likeNumbers(set, fn) { for (const n of set) yield fn(n); }
+  function* consec(len, starts, fn) { for (const s of starts) yield fn(s); }
+  const ODD = [1, 3, 5, 7, 9], EVEN = [2, 4, 6, 8], ALL9 = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+
+  /* ---- Section: 2026 ---- */
+  add({ section: '2026', name: 'L1  222 000 2222 6666', suits: 2,
+    gen: () => ONCE([num(2,0,3), soap(3), num(2,1,4), num(6,1,4)]) }); // ~role-inferred
+  add({ section: '2026', name: 'L2  2026 DDD 2222 DDD (K2/6)', suits: 2,
+    gen: function* () {
+      for (const k of [2, 6]) {
+        // 2,0,2,6 singles (suited 2/6, soap 0); two matching-dragon pungs; kong of k
+        yield [num(2,0,1), soap(1), num(2,0,1), num(6,1,1), Dm(0,3), num(k, k===2?0:1, 4), Dm(1,3)]; // ~role-inferred
+      }
+    }});
+  add({ section: '2026', name: 'L3  FFF 2026 222 6666', suits: 3,
+    gen: () => ONCE([flw(3), num(2,0,1), soap(1), num(2,0,1), num(6,1,1), num(2,1,3), num(6,2,4)]) }); // ~role-inferred
+  add({ section: '2026', name: 'L4  22 00 222 666 NEWS', suits: 2,
+    gen: () => ONCE([num(2,0,2), soap(2), num(2,1,3), num(6,1,3), wnd('N',1), wnd('E',1), wnd('W',1), wnd('S',1)]) }); // ~role-inferred
+
+  /* ---- Section: 2468 ---- */
+  add({ section: '2468', name: 'L1A 222 444 6666 8888', suits: 1,
+    gen: () => ONCE([num(2,0,3), num(4,0,3), num(6,0,4), num(8,0,4)]) });
+  add({ section: '2468', name: 'L1B 222 444 6666 8888', suits: 2,
+    gen: () => ONCE([num(2,0,3), num(4,0,3), num(6,1,4), num(8,1,4)]) }); // ~role-inferred
+  add({ section: '2468', name: 'L2  FF 2222 44 66 8888', suits: 2,
+    gen: () => ONCE([flw(2), num(2,0,4), num(4,0,2), num(6,0,2), num(8,1,4)]) }); // ~role-inferred
+  add({ section: '2468', name: 'L3  EE 22 444 666 88 WW', suits: 1,
+    gen: () => ONCE([wnd('E',2), num(2,0,2), num(4,0,3), num(6,0,3), num(8,0,2), wnd('W',2)]) });
+  add({ section: '2468', name: 'L4  2222 DDD 8888 DDD', suits: 2,
+    gen: () => ONCE([num(2,0,4), Dm(0,3), num(8,1,4), Dm(1,3)]) });
+  add({ section: '2468', name: 'L5  FFF 22 44 666 8888', suits: 1,
+    gen: () => ONCE([flw(3), num(2,0,2), num(4,0,2), num(6,0,3), num(8,0,4)]) });
+  add({ section: '2468', name: 'L6  2468 KKKK D KKKK D', suits: 3, // Like Kongs 2/4/6/8 w matching D
+    gen: function* () {
+      for (const k of EVEN)
+        yield [num(2,0,1), num(4,0,1), num(6,0,1), num(8,0,1), num(k,1,4), Dm(1,1), num(k,2,4), Dm(2,1)];
+    }});
+  add({ section: '2468', name: 'L7  FFF 2468 FFF KKKK', suits: 2, // Kong 2/4/6/8
+    gen: function* () {
+      for (const k of EVEN)
+        yield [flw(3), num(2,0,1), num(4,0,1), num(6,0,1), num(8,0,1), flw(3), num(k,1,4)]; // ~role-inferred
+    }});
+  add({ section: '2468', name: 'L8  FF 246 888 246 888', suits: 2,
+    gen: () => ONCE([flw(2), num(2,0,1), num(4,0,1), num(6,0,1), num(8,0,3), num(2,1,1), num(4,1,1), num(6,1,1), num(8,1,3)]) });
+
+  /* ---- Section: Any Like Numbers ---- */
+  add({ section: 'Like Nos', name: 'L1  1111 FFFFFF 1111', suits: 2,
+    gen: () => [...likeNumbers(ALL9, n => [num(n,0,4), flw(6), num(n,1,4)])] });
+  add({ section: 'Like Nos', name: 'L2  NNNN D NNN D NNNN D', suits: 3, // 1111 D 111 D 1111 D matching
+    gen: () => [...likeNumbers(ALL9, n => [num(n,0,4), Dm(0,1), num(n,1,3), Dm(1,1), num(n,2,4), Dm(2,1)])] });
+  add({ section: 'Like Nos', name: 'L3  FF 1111 11 1111 DD', suits: 3, // any dragon pair
+    gen: function* () {
+      for (const n of ALL9) for (const d of ALL_DRAGONS)
+        yield [flw(2), num(n,0,4), num(n,1,2), num(n,2,4), { k:'drg', mode:'fixed', fixed:d, c:2 }];
+    }});
+
+  /* ---- Section: Quints ---- */
+  add({ section: 'Quints', name: 'L1  KKKKK KKKK KKKKK', suits: 3, // any like no.
+    gen: () => [...likeNumbers(ALL9, n => [num(n,0,5), num(n,1,4), num(n,2,5)])] });
+  add({ section: 'Quints', name: 'L2  FF KKKKK MM NNNNN', suits: 1, // any 3 consec
+    gen: () => [...consec(3, [1,2,3,4,5,6,7], s => [flw(2), num(s,0,5), num(s+1,0,2), num(s+2,0,5)])] });
+  add({ section: 'Quints', name: 'L3  KKKKK MMMMM DDDD', suits: 1, // any 2 nos w opp dragon
+    gen: function* () {
+      for (let a = 1; a <= 9; a++) for (let b = a + 1; b <= 9; b++)
+        yield [num(a,0,5), num(b,0,5), Dopp(0,4)];
+    }});
+
+  /* ---- Section: Consecutive Run ---- */
+  add({ section: 'Consec', name: 'L1A 11 222 33 444 5555', suits: 1, // these nos only
+    gen: () => ONCE([num(1,0,2), num(2,0,3), num(3,0,2), num(4,0,3), num(5,0,4)]) });
+  add({ section: 'Consec', name: 'L1B 55 666 77 888 9999', suits: 1,
+    gen: () => ONCE([num(5,0,2), num(6,0,3), num(7,0,2), num(8,0,3), num(9,0,4)]) });
+  add({ section: 'Consec', name: 'L2A FFF KKKK MNP QQQQ', suits: 1, // any 5 consec
+    gen: () => [...consec(5,[1,2,3,4,5], s => [flw(3), num(s,0,4), num(s+1,0,1), num(s+2,0,1), num(s+3,0,1), num(s+4,0,4)])] });
+  add({ section: 'Consec', name: 'L2B FFF KKKK MNP QQQQ', suits: 2,
+    gen: () => [...consec(5,[1,2,3,4,5], s => [flw(3), num(s,0,4), num(s+1,0,1), num(s+2,0,1), num(s+3,1,1), num(s+4,1,4)])] }); // ~role-inferred
+  add({ section: 'Consec', name: 'L3  KK MM KKK MMM NNNN', suits: 3, // any 3 consec
+    gen: () => [...consec(3,[1,2,3,4,5,6,7], s => [num(s,0,2), num(s+1,1,2), num(s,0,3), num(s+1,1,3), num(s+2,2,4)])] });
+  add({ section: 'Consec', name: 'L4A KKK MMM NNNN PPPP', suits: 1, // any 4 consec
+    gen: () => [...consec(4,[1,2,3,4,5,6], s => [num(s,0,3), num(s+1,0,3), num(s+2,0,4), num(s+3,0,4)])] });
+  add({ section: 'Consec', name: 'L4B KKK MMM NNNN PPPP', suits: 2,
+    gen: () => [...consec(4,[1,2,3,4,5,6], s => [num(s,0,3), num(s+1,0,3), num(s+2,1,4), num(s+3,1,4)])] }); // ~role-inferred
+  add({ section: 'Consec', name: 'L5A FFF KK MM NNN DDDD', suits: 1, // Ds match middle
+    gen: () => [...consec(3,[1,2,3,4,5,6,7], s => [flw(3), num(s,0,2), num(s+1,0,2), num(s+2,0,3), Dm(0,4)])] });
+  add({ section: 'Consec', name: 'L5B FFF KK MM NNN DDDD', suits: 2,
+    gen: () => [...consec(3,[1,2,3,4,5,6,7], s => [flw(3), num(s,0,2), num(s+1,0,2), num(s+2,1,3), Dm(1,4)])] }); // ~role-inferred
+  add({ section: 'Consec', name: 'L6  KKKK FFFFFF MMMM', suits: 1, // any 2 consec
+    gen: () => [...consec(2,[1,2,3,4,5,6,7,8], s => [num(s,0,4), flw(6), num(s+1,0,4)])] });
+  add({ section: 'Consec', name: 'L7A FF KKKK MMMM NNNN', suits: 1, // any 3 consec
+    gen: () => [...consec(3,[1,2,3,4,5,6,7], s => [flw(2), num(s,0,4), num(s+1,0,4), num(s+2,0,4)])] });
+  add({ section: 'Consec', name: 'L7B FF KKKK MMMM NNNN', suits: 3,
+    gen: () => [...consec(3,[1,2,3,4,5,6,7], s => [flw(2), num(s,0,4), num(s+1,1,4), num(s+2,2,4)])] });
+  add({ section: 'Consec', name: 'L8  K MM NNN K MM NNN PP', suits: 3, // any 4 consec
+    gen: () => [...consec(4,[1,2,3,4,5,6], s => [num(s,0,1), num(s+1,0,2), num(s+2,0,3), num(s,1,1), num(s+1,1,2), num(s+2,1,3), num(s+3,2,2)])] }); // ~role-inferred
+
+  /* ---- Section: 13579 ---- */
+  add({ section: '13579', name: 'L1A 11 333 55 777 9999', suits: 1,
+    gen: () => ONCE([num(1,0,2), num(3,0,3), num(5,0,2), num(7,0,3), num(9,0,4)]) });
+  add({ section: '13579', name: 'L1B 11 333 55 777 9999', suits: 3,
+    gen: () => ONCE([num(1,0,2), num(3,0,3), num(5,1,2), num(7,1,3), num(9,2,4)]) }); // ~role-inferred
+  add({ section: '13579', name: 'L2A 111 333 3333 5555', suits: 2,
+    gen: () => ONCE([num(1,0,3), num(3,0,3), num(3,1,4), num(5,1,4)]) }); // ~role-inferred
+  add({ section: '13579', name: 'L2B 555 777 7777 9999', suits: 2,
+    gen: () => ONCE([num(5,0,3), num(7,0,3), num(7,1,4), num(9,1,4)]) }); // ~role-inferred
+  add({ section: '13579', name: 'L3A NN 1111 33 5555 SS', suits: 1,
+    gen: () => ONCE([wnd('N',2), num(1,0,4), num(3,0,2), num(5,0,4), wnd('S',2)]) });
+  add({ section: '13579', name: 'L3B NN 5555 77 9999 SS', suits: 1,
+    gen: () => ONCE([wnd('N',2), num(5,0,4), num(7,0,2), num(9,0,4), wnd('S',2)]) });
+  add({ section: '13579', name: 'L4  113579 KKKK KKKK', suits: 3, // pair any odd, kongs match pair
+    gen: function* () {
+      for (const p of ODD) {
+        const singles = ODD.filter(x => x !== p);
+        // pair p (jokerless) + 4 odd singles + two kongs of p
+        const g = [num(p,0,2)];
+        for (const s of singles) g.push(num(s,0,1));
+        g.push(num(p,1,4), num(p,2,4));
+        yield g;
+      }
+    }});
+  add({ section: '13579', name: 'L5A FFF 11 33 555 DDDD', suits: 1,
+    gen: () => ONCE([flw(3), num(1,0,2), num(3,0,2), num(5,0,3), Dm(0,4)]) });
+  add({ section: '13579', name: 'L5B FFF 55 77 999 DDDD', suits: 1,
+    gen: () => ONCE([flw(3), num(5,0,2), num(7,0,2), num(9,0,3), Dm(0,4)]) });
+  add({ section: '13579', name: 'L6A 11 33 111 333 5555', suits: 3,
+    gen: () => ONCE([num(1,0,2), num(3,1,2), num(1,0,3), num(3,1,3), num(5,2,4)]) }); // ~role-inferred
+  add({ section: '13579', name: 'L6B 55 77 555 777 9999', suits: 3,
+    gen: () => ONCE([num(5,0,2), num(7,1,2), num(5,0,3), num(7,1,3), num(9,2,4)]) }); // ~role-inferred
+  add({ section: '13579', name: 'L7A 1111 33 55 77 9999', suits: 1,
+    gen: () => ONCE([num(1,0,4), num(3,0,2), num(5,0,2), num(7,0,2), num(9,0,4)]) });
+  add({ section: '13579', name: 'L7B 1111 33 55 77 9999', suits: 2,
+    gen: () => ONCE([num(1,0,4), num(3,0,2), num(5,0,2), num(7,1,2), num(9,1,4)]) }); // ~role-inferred
+  add({ section: '13579', name: 'L8A FF 11 33 55 111 111', suits: 3,
+    gen: () => ONCE([flw(2), num(1,0,2), num(3,1,2), num(5,2,2), num(1,0,3), num(1,1,3)]) }); // ~role-inferred
+  add({ section: '13579', name: 'L8B FF 55 77 99 555 555', suits: 3,
+    gen: () => ONCE([flw(2), num(5,0,2), num(7,1,2), num(9,2,2), num(5,0,3), num(5,1,3)]) }); // ~role-inferred
+  add({ section: '13579', name: 'L9  FF 135 777 999 DDD', suits: 1, // opp dragon
+    gen: () => ONCE([flw(2), num(1,0,1), num(3,0,1), num(5,0,1), num(7,0,3), num(9,0,3), Dopp(0,3)]) });
+
+  /* ---- Section: Winds-Dragons ---- */
+  add({ section: 'W-D', name: 'L1A NNNN EEE WWW SSSS', suits: 0,
+    gen: () => ONCE([wnd('N',4), wnd('E',3), wnd('W',3), wnd('S',4)]) });
+  add({ section: 'W-D', name: 'L1B NNN EEEE WWWW SSS', suits: 0,
+    gen: () => ONCE([wnd('N',3), wnd('E',4), wnd('W',4), wnd('S',3)]) });
+  add({ section: 'W-D', name: 'L2  1234 DDD DDD DDDD', suits: 1, dragonDistinct: true, // any 4 consec, any 3 dragons
+    gen: () => [...consec(4,[1,2,3,4,5,6], s => [num(s,0,1), num(s+1,0,1), num(s+2,0,1), num(s+3,0,1), Dany(3), Dany(3), Dany(4)])] });
+  add({ section: 'W-D', name: 'L3  NNN KKKK KKKK SSS', suits: 2, // any like odd
+    gen: () => [...likeNumbers(ODD, n => [wnd('N',3), num(n,0,4), num(n,1,4), wnd('S',3)])] });
+  add({ section: 'W-D', name: 'L4  EEE KKKK KKKK WWW', suits: 2, // any like even
+    gen: () => [...likeNumbers(EVEN, n => [wnd('E',3), num(n,0,4), num(n,1,4), wnd('W',3)])] });
+  add({ section: 'W-D', name: 'L5  FFF WWWW FFF DDDD', suits: 0, // any wind, any dragon
+    gen: function* () {
+      for (const w of ['N','E','W','S']) for (const d of ALL_DRAGONS)
+        yield [flw(3), wnd(w,4), flw(3), { k:'drg', mode:'fixed', fixed:d, c:4 }];
+    }});
+  add({ section: 'W-D', name: 'L6  1 N 2 EE 3 WWW 4 SSSS', suits: 1, // these nos only
+    gen: () => ONCE([num(1,0,1), wnd('N',1), num(2,0,1), wnd('E',2), num(3,0,1), wnd('W',3), num(4,0,1), wnd('S',4)]) });
+  add({ section: 'W-D', name: 'L7A FF NNNN SSSS DD DD', suits: 0, dragonDistinct: true,
+    gen: () => ONCE([flw(2), wnd('N',4), wnd('S',4), Dany(2), Dany(2)]) });
+  add({ section: 'W-D', name: 'L7B FF EEEE WWWW DD DD', suits: 0, dragonDistinct: true,
+    gen: () => ONCE([flw(2), wnd('E',4), wnd('W',4), Dany(2), Dany(2)]) });
+  add({ section: 'W-D', name: 'L8  NN EEE 2026 WWW SS', suits: 1,
+    gen: () => ONCE([wnd('N',2), wnd('E',3), num(2,0,1), soap(1), num(2,0,1), num(6,0,1), wnd('W',3), wnd('S',2)]) });
+
+  /* ---- Section: 369 ---- */
+  add({ section: '369', name: 'L1A 333 666 6666 9999', suits: 2,
+    gen: () => ONCE([num(3,0,3), num(6,0,3), num(6,1,4), num(9,1,4)]) }); // ~role-inferred
+  add({ section: '369', name: 'L1B 333 666 6666 9999', suits: 3,
+    gen: () => ONCE([num(3,0,3), num(6,1,3), num(6,1,4), num(9,2,4)]) }); // ~role-inferred
+  add({ section: '369', name: 'L2  33 66 333 666 9999', suits: 3,
+    gen: () => ONCE([num(3,0,2), num(6,1,2), num(3,0,3), num(6,1,3), num(9,2,4)]) }); // ~role-inferred
+  add({ section: '369', name: 'L3A FFF 33 666 99 DDDD', suits: 1, // matching dragon
+    gen: () => ONCE([flw(3), num(3,0,2), num(6,0,3), num(9,0,2), Dm(0,4)]) });
+  add({ section: '369', name: 'L3B FFF 33 666 99 DDDD', suits: 1, // opp dragon
+    gen: () => ONCE([flw(3), num(3,0,2), num(6,0,3), num(9,0,2), Dopp(0,4)]) });
+  add({ section: '369', name: 'L4  33 66 666 999 NEWS', suits: 2,
+    gen: () => ONCE([num(3,0,2), num(6,0,2), num(6,1,3), num(9,1,3), wnd('N',1), wnd('E',1), wnd('W',1), wnd('S',1)]) }); // ~role-inferred
+  add({ section: '369', name: 'L5  FF 3369 KKKK KKKK', suits: 3, // pair 3/6/9, kongs match
+    gen: function* () {
+      for (const p of [3,6,9]) {
+        const singles = [3,6,9].filter(x => x !== p);
+        const g = [flw(2), num(p,0,2)];
+        for (const s of singles) g.push(num(s,0,1));
+        g.push(num(p,1,4), num(p,2,4));
+        yield g;
+      }
+    }});
+  add({ section: '369', name: 'L6  FF 333 666 999 369', suits: 2,
+    gen: () => ONCE([flw(2), num(3,0,3), num(6,0,3), num(9,0,3), num(3,1,1), num(6,1,1), num(9,1,1)]) }); // ~role-inferred
+
+  /* ---- Section: Singles and Pairs (no jokers anywhere) ---- */
+  add({ section: 'S&P', name: 'L1  NN EE WW SS 1D 1D 1D', suits: 3, // like no w matching D
+    gen: () => [...likeNumbers(ALL9, n => [wnd('N',2), wnd('E',2), wnd('W',2), wnd('S',2),
+        num(n,0,1), Dm(0,1), num(n,1,1), Dm(1,1), num(n,2,1), Dm(2,1)])] });
+  add({ section: 'S&P', name: 'L2  2 4 66 88 2 4 66 88 88', suits: 3,
+    gen: () => ONCE([num(2,0,1), num(4,0,1), num(6,0,2), num(8,0,2), num(2,1,1), num(4,1,1), num(6,1,2), num(8,1,2), num(8,2,2)]) }); // ~role-inferred
+  add({ section: 'S&P', name: 'L3  FF 3369 3669 3699', suits: 3, // each group: pair + 2 singles
+    gen: () => ONCE([flw(2),
+      num(3,0,2), num(6,0,1), num(9,0,1),   // 3369 -> pair 3
+      num(6,1,2), num(3,1,1), num(9,1,1),   // 3669 -> pair 6
+      num(9,2,2), num(3,2,1), num(6,2,1)]) }); // 3699 -> pair 9
+  add({ section: 'S&P', name: 'L4  11 22 33 44 55 66 77', suits: 1, // any 7 consec
+    gen: () => [...consec(7,[1,2,3], s => [num(s,0,2), num(s+1,0,2), num(s+2,0,2), num(s+3,0,2), num(s+4,0,2), num(s+5,0,2), num(s+6,0,2)])] });
+  add({ section: 'S&P', name: 'L5  11 357 99 11 357 99', suits: 2,
+    gen: () => ONCE([num(1,0,2), num(3,0,1), num(5,0,1), num(7,0,1), num(9,0,2), num(1,1,2), num(3,1,1), num(5,1,1), num(7,1,1), num(9,1,2)]) });
+  add({ section: 'S&P', name: 'L6  FF 2026 2026 2026', suits: 3,
+    gen: () => ONCE([flw(2),
+      num(2,0,1), soap(1), num(2,0,1), num(6,0,1),
+      num(2,1,1), soap(1), num(2,1,1), num(6,1,1),
+      num(2,2,1), soap(1), num(2,2,1), num(6,2,1)]) });
+
+  // ---- build flat target list ------------------------------------------
+  let TARGETS = null;
+  function buildTargets() {
+    if (TARGETS) return TARGETS;
+    TARGETS = [];
+    for (const line of CARD) for (const t of expandLine(line)) TARGETS.push(t);
+    return TARGETS;
+  }
+
+  // ======================================================================
+  //  METRICS + RATING
+  // ======================================================================
+
+  // per-line minimum distance + overall nearest targets
+  function analyzeStatic(tiles) {
+    const hp = handPool(tiles);
+    const targets = buildTargets();
+    const lineMin = new Map();   // "section/name" -> min tilesNeeded
+    let best = 99, bestTargets = [];
+    for (const t of targets) {
+      const d = tilesNeeded(t, hp);
+      const key = t.section + ' | ' + t.name;
+      if (d < (lineMin.get(key) ?? 99)) lineMin.set(key, d);
+      if (d < best) { best = d; bestTargets = [t]; }
+      else if (d === best) bestTargets.push(t);
+    }
+    return { hp, best, lineMin, bestTargets };
+  }
+
+  function suitEntropy(tiles) {
+    const c = { B: 0, C: 0, D: 0 }; let tot = 0;
+    for (const t of tiles) { const s = t[1]; if (t.length === 2 && SUITS.includes(s) && t[0] >= '1' && t[0] <= '9') { c[t[1]]++; tot++; } }
+    if (tot === 0) return 0;
+    let h = 0;
+    for (const s of SUITS) { const p = c[s] / tot; if (p > 0) h -= p * Math.log2(p); }
+    return h; // 0..log2(3)=1.585
+  }
+
+  function structureCounts(tiles) {
+    const m = new Map();
+    for (const t of tiles) if (t !== 'JK') m.set(t, (m.get(t) || 0) + 1);
+    let pairs = 0, pungs = 0;
+    for (const v of m.values()) { if (v >= 2) pairs++; if (v >= 3) pungs++; }
+    return { pairs, pungs };
+  }
+
+  function parity(tiles) {
+    let even = 0, odd = 0;
+    for (const t of tiles) {
+      if (t.length === 2 && SUITS.includes(t[1]) && t[0] >= '1' && t[0] <= '9') {
+        (((+t[0]) % 2) === 0 ? even++ : odd++);
+      }
+    }
+    return { even, odd };
+  }
+
+  // reachMass = sum over card lines of exp(-LAMBDA * lineDistance). Validated
+  // surrogate for MC P(reach mahjong): r=0.89, R^2=0.80 on realistic hands.
+  const LAMBDA = 0.8;
+  // calibration P ~ A + B*reachMass (OLS on the verification set)
+  const CALIB = { A: -0.0324, B: 0.9449 };
+  function reachMassFromLineMin(lineMin) {
+    let m = 0; for (const d of lineMin.values()) m += Math.exp(-LAMBDA * d); return m;
+  }
+  function fastP(reachMass) { return Math.max(0, CALIB.A + CALIB.B * reachMass); }
+
+  // reachMass of an arbitrary hand over a fixed candidate target subset
+  function reachMassOver(tiles, cand) {
+    const hp = handPool(tiles); const lm = new Map();
+    for (const t of cand) {
+      const d = tilesNeeded(t, hp); const key = t.section + '|' + t.name;
+      if (d < (lm.get(key) ?? 99)) lm.set(key, d);
+    }
+    return reachMassFromLineMin(lm);
+  }
+
+  // metric bundle (cheap, for display + Charleston ranking)
+  function metrics(tiles) {
+    const st = analyzeStatic(tiles);
+    const jokers = tiles.filter(t => t === 'JK').length;
+    const within = (k) => [...st.lineMin.values()].filter(d => d <= st.best + k).length;
+    const reachMass = reachMassFromLineMin(st.lineMin);
+    const ent = suitEntropy(tiles);
+    const sc = structureCounts(tiles);
+    const par = parity(tiles);
+    // dead tiles: not required by any near target (best+2)
+    const nearReq = new Set();
+    for (const t of buildTargets()) {
+      if (tilesNeeded(t, st.hp) <= st.best + 2)
+        for (const g of t.groups) nearReq.add(g.tile);
+    }
+    const dead = [];
+    for (const t of tiles) if (t !== 'JK' && !nearReq.has(t)) dead.push(t);
+    return {
+      distance: st.best,
+      flexBest: within(0), flex1: within(1), flex2: within(2),
+      reachMass: +reachMass.toFixed(4), fastP: +fastP(reachMass).toFixed(4),
+      jokers, suitEntropy: +ent.toFixed(3),
+      pairs: sc.pairs, pungs: sc.pungs,
+      even: par.even, odd: par.odd,
+      deadTiles: dead, lineMin: st.lineMin, bestTargets: st.bestTargets,
+    };
+  }
+
+  // ---- solo Monte Carlo: P(reach mahjong) -------------------------------
+  // Model: you hold `tiles` (13). Over K draws from the unseen wall you may
+  // keep any tiles that help. P = fraction of trials where SOME candidate
+  // target becomes fully coverable from (hand + draws). Candidate targets =
+  // those within `cutoff` of the static best (keeps it fast & realistic).
+  function monteCarlo(tiles, opts) {
+    opts = opts || {};
+    const K = opts.draws ?? 16;
+    const sims = opts.sims ?? 2500;
+    const cutoff = opts.cutoff ?? 6;
+    const maxCand = opts.maxCand ?? 300;
+
+    const hp0 = handPool(tiles);
+    const targets = buildTargets();
+    // shortlist: targets within `cutoff` of best, capped to the `maxCand`
+    // nearest (far targets contribute ~0 to P and only slow the sim).
+    let cand = [];
+    let best = 99;
+    for (const t of targets) { const d = tilesNeeded(t, hp0); if (d < best) best = d; t._d = d; }
+    for (const t of targets) if (t._d <= best + cutoff) cand.push(t);
+    cand.sort((a, b) => a._d - b._d);
+    if (cand.length > maxCand) cand = cand.slice(0, maxCand);
+
+    // remaining wall = full pool minus hand
+    const wall = [];
+    const rem = fullPool();
+    for (const t of tiles) rem.set(t, (rem.get(t) || 0) - 1);
+    for (const [tile, n] of rem) for (let i = 0; i < n; i++) wall.push(tile);
+
+    let wins = 0;
+    for (let s = 0; s < sims; s++) {
+      // sample K tiles without replacement (partial Fisher-Yates)
+      const w = wall;
+      for (let i = 0; i < K; i++) {
+        const j = i + Math.floor(Math.random() * (w.length - i));
+        const tmp = w[i]; w[i] = w[j]; w[j] = tmp;
+      }
+      // pool = hand + first K drawn
+      const pool = new Map(hp0.pool); let jk = hp0.jokers;
+      for (let i = 0; i < K; i++) {
+        const t = w[i];
+        if (t === 'JK') jk++; else pool.set(t, (pool.get(t) || 0) + 1);
+      }
+      let won = false;
+      for (const t of cand) { if (coverage(t, pool, jk) === 14) { won = true; break; } }
+      if (won) wins++;
+    }
+    return { p: wins / sims, draws: K, sims, candidates: cand.length, best };
+  }
+
+  // ---- Charleston v1: which 3 to pass -----------------------------------
+  // Rank distinct tiles by marginal usefulness (rise in best-distance if one
+  // copy removed); recommend passing the 3 least useful. Never pass a joker.
+  function charlestonSuggest(tiles) {
+    const base = analyzeStatic(tiles).best;
+    const counts = new Map();
+    for (const t of tiles) counts.set(t, (counts.get(t) || 0) + 1);
+    const scored = [];
+    for (const [tile, n] of counts) {
+      if (tile === 'JK') { scored.push({ tile, marginal: 99 }); continue; }
+      const reduced = tiles.slice();
+      reduced.splice(reduced.indexOf(tile), 1);
+      const d = analyzeStatic(reduced).best;
+      scored.push({ tile, marginal: d - base, copies: n });
+    }
+    scored.sort((a, b) => a.marginal - b.marginal); // least useful first
+    // build a 3-tile pass from least useful, respecting copies
+    const pass = [];
+    for (const s of scored) {
+      let avail = counts.get(s.tile);
+      while (avail-- > 0 && pass.length < 3 && s.tile !== 'JK') pass.push(s.tile);
+      if (pass.length >= 3) break;
+    }
+    return { pass: pass.slice(0, 3), ranking: scored };
+  }
+
+  // ---- Charleston pass OPTIMIZER (phase 2) ------------------------------
+  // For every distinct 3-tile pass, estimate expected post-pass strength by
+  // sampling the (unknown) tiles you receive and scoring the resulting 13-tile
+  // hand with the validated reachMass surrogate. Returns passes ranked by EV.
+  // Models received tiles as uniform-random from the unseen pool (first proper
+  // model; a later version can weight by opponents' likely discards).
+  function charlestonOptimize(tiles, opts) {
+    opts = opts || {};
+    const R = opts.received ?? 24;     // received-tile samples per pass
+    const candCap = opts.maxCand ?? 220;
+    const window = opts.window ?? 4;   // include lines within best+window
+
+    const hp0 = handPool(tiles);
+    const targets = buildTargets();
+    let best = 99;
+    for (const t of targets) { const d = tilesNeeded(t, hp0); t._d = d; if (d < best) best = d; }
+    let cand = targets.filter(t => t._d <= best + window).sort((a, b) => a._d - b._d);
+    if (cand.length > candCap) cand = cand.slice(0, candCap);
+
+    // unseen pool to draw received tiles from = full minus your 13
+    const rem = fullPool();
+    for (const t of tiles) rem.set(t, (rem.get(t) || 0) - 1);
+    const wall = [];
+    for (const [t, c] of rem) for (let i = 0; i < c; i++) wall.push(t);
+
+    const baseRM = reachMassOver(tiles, cand);
+
+    // distinct 3-tile passes (never pass a joker)
+    const seen = new Set(); const results = [];
+    for (let a = 0; a < 13; a++) for (let b = a + 1; b < 13; b++) for (let c = b + 1; c < 13; c++) {
+      const trio = [tiles[a], tiles[b], tiles[c]];
+      if (trio.includes('JK')) continue;
+      const key = trio.slice().sort().join(',');
+      if (seen.has(key)) continue; seen.add(key);
+      const baseHand = []; for (let i = 0; i < 13; i++) if (i !== a && i !== b && i !== c) baseHand.push(tiles[i]);
+      let sum = 0;
+      for (let s = 0; s < R; s++) {
+        for (let i = 0; i < 3; i++) { const j = i + ((Math.random() * (wall.length - i)) | 0); const tmp = wall[i]; wall[i] = wall[j]; wall[j] = tmp; }
+        sum += reachMassOver(baseHand.concat(wall.slice(0, 3)), cand);
+      }
+      results.push({ pass: trio, ev: sum / R, keepOnly: reachMassOver(baseHand, cand) });
+    }
+    results.sort((x, y) => y.ev - x.ev);
+    return { best, baseRM, baseP: +fastP(baseRM).toFixed(4), candidates: cand.length, results };
+  }
+
+  const API = {
+    SUITS, DRAGON_OF, fullPool, CARD, CALIB,
+    expandLine, buildTargets, coverage, handPool, tilesNeeded,
+    reachMassOver, analyzeStatic, metrics, monteCarlo,
+    charlestonSuggest, charlestonOptimize,
+  };
+  if (typeof module !== 'undefined' && module.exports) module.exports = API;
+  root.MahjonggEngine = API;
+})(typeof globalThis !== 'undefined' ? globalThis : this);
+
+};
+__modules['./stats.js'] = function(module, exports, require){
+/* Part 2 — statistics foundation.
+ * Honest uncertainty on every Monte-Carlo number: Wilson/Jeffreys binomial CIs,
+ * standard error, sample-size guidance, Common Random Numbers (CRN), and an
+ * explicit VERSIONED rollout policy so stored evaluations stay comparable (A.2).
+ */
+
+// ---- binomial confidence intervals ------------------------------------
+// Normal approx breaks at the tails (can return negative lower bounds), so we
+// default to Wilson, which stays valid for small p and small N. (A.3/A.4)
+function wilson(k, n, z = 1.96) {
+  if (n === 0) return { lo: 0, hi: 1, p: 0 };
+  const p = k / n, z2 = z * z;
+  const denom = 1 + z2 / n;
+  const center = (p + z2 / (2 * n)) / denom;
+  const half = (z * Math.sqrt(p * (1 - p) / n + z2 / (4 * n * n))) / denom;
+  return { p, lo: Math.max(0, center - half), hi: Math.min(1, center + half) };
+}
+function jeffreys(k, n) { // Bayesian Beta(0.5,0.5) interval — good alternative at tails
+  // approximate via normal on logit when libs unavailable; fall back to Wilson
+  return wilson(k, n);
+}
+function stderr(p, n) { return Math.sqrt(p * (1 - p) / n); }
+
+// rollouts needed to separate two options whose true rates differ by delta (A.3)
+function nToSeparate(delta, p = 0.25, z = 1.96) {
+  return Math.ceil(2 * z * z * p * (1 - p) / (delta * delta)); // per option, independent sampling
+}
+
+// two estimates are a "statistical dead heat" if their CIs overlap (A.3)
+function deadHeat(a, b) { return !(a.hi < b.lo || b.hi < a.lo); }
+
+// ---- Common Random Numbers --------------------------------------------
+// Pre-generate a bank of shuffled walls so every candidate is evaluated on the
+// SAME randomness. Differences V(a)-V(b) then have far lower variance (B.3).
+function mulberry32(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function crnSeeds(n, masterSeed = 12345) { const r = mulberry32(masterSeed); const s = []; for (let i = 0; i < n; i++) s.push((r() * 2 ** 31) | 0); return s; }
+
+// paired difference CI for V(a)-V(b) under CRN (lower variance than unpaired)
+function pairedDiffCI(diffs, z = 1.96) {
+  const n = diffs.length, m = diffs.reduce((x, y) => x + y, 0) / n;
+  const v = diffs.reduce((s, d) => s + (d - m) ** 2, 0) / Math.max(1, n - 1);
+  const se = Math.sqrt(v / n);
+  return { mean: m, se, lo: m - z * se, hi: m + z * se, separated: (m - z * se) > 0 || (m + z * se) < 0 };
+}
+
+// ---- proper scoring rules (B.4) ---------------------------------------
+function brier(preds, outcomes) { let s = 0; for (let i = 0; i < preds.length; i++) s += (preds[i] - outcomes[i]) ** 2; return s / preds.length; }
+function logLoss(preds, outcomes) {
+  const e = 1e-12; let s = 0;
+  for (let i = 0; i < preds.length; i++) { const p = Math.min(1 - e, Math.max(e, preds[i])); s += -(outcomes[i] * Math.log(p) + (1 - outcomes[i]) * Math.log(1 - p)); }
+  return s / preds.length;
+}
+function reliability(preds, outcomes, bins = 10) {
+  const B = Array.from({ length: bins }, () => ({ sumP: 0, sumO: 0, n: 0 }));
+  for (let i = 0; i < preds.length; i++) { const b = Math.min(bins - 1, Math.floor(preds[i] * bins)); B[b].sumP += preds[i]; B[b].sumO += outcomes[i]; B[b].n++; }
+  let ece = 0; const rows = [];
+  for (const b of B) if (b.n) { const conf = b.sumP / b.n, acc = b.sumO / b.n; ece += (b.n / preds.length) * Math.abs(conf - acc); rows.push({ conf, acc, n: b.n }); }
+  return { ece, rows };
+}
+
+// ---- versioned rollout policy registry (A.2) --------------------------
+const ROLLOUT_POLICY = {
+  version: '0.1.0-greedy',
+  describe: 'single-target greedy deficiency-reducer; legal calls (C1/C3); no joker redemption; uniform play phase',
+  note: 'win-rate ~74% vs 89% anchor — treat absolute probabilities as uncalibrated until policy strengthened',
+};
+
+module.exports = { wilson, jeffreys, stderr, nToSeparate, deadHeat, mulberry32, crnSeeds, pairedDiffCI, brier, logLoss, reliability, ROLLOUT_POLICY };
+
+};
+__modules['./card-meta.js'] = function(module, exports, require){
+/* Phase 0 — card metadata (points / concealed / suitFlex).
+ *
+ * IMPORTANT: point values + concealed flags below are ILLUSTRATIVE and UNVERIFIED.
+ * They are section-level defaults, not the real 2026 NMJL face values. The WINS
+ * objective never reads them; only POINTS mode does. `verified:false` marks this.
+ * Replace `SECTION_POINTS` / `CONCEALED_LINES` against a physical card before
+ * trusting any POINTS-mode output. (Correction C8.)
+ */
+const E = require('./engine.js');
+
+const SECTION_POINTS = { // illustrative
+  '2026': 30, '2468': 25, 'Like Nos': 30, 'Quints': 45, 'Consec': 25,
+  '13579': 30, 'W-D': 30, '369': 30, 'S&P': 55,
+};
+// lines commonly played concealed (illustrative subset). Singles & Pairs cannot
+// use jokers and are effectively built in hand; mark them concealed for modeling.
+const CONCEALED_SECTIONS = new Set(['S&P']);
+
+function pointsFor(section) { return SECTION_POINTS[section] ?? 25; }
+function concealedFor(line) { return CONCEALED_SECTIONS.has(line.section); }
+function suitFlexFor(line) {
+  return ({ 0: 'FIXED', 1: 'ANY_1_SUIT', 2: 'ANY_2_SUIT', 3: 'ANY_3_SUIT' })[line.suits] ?? 'ANY_1_SUIT';
+}
+
+// attach meta to every concrete target, keyed by its line
+function buildMeta() {
+  const lineMeta = new Map();
+  for (const line of E.CARD) {
+    const key = line.section + ' | ' + line.name;
+    lineMeta.set(key, {
+      points: pointsFor(line.section),
+      concealed: concealedFor(line),
+      suitFlex: suitFlexFor(line),
+      category: line.section,
+      verified: false,
+    });
+  }
+  return lineMeta;
+}
+
+module.exports = { SECTION_POINTS, pointsFor, concealedFor, suitFlexFor, buildMeta,
+  metaForTarget: (t, lineMeta) => lineMeta.get(t.section + ' | ' + t.name) };
+
+};
+__modules['./score.js'] = function(module, exports, require){
+/* Phase 3 — objective-aware scoring (WINS vs POINTS, correction C10).
+ * WINS strength = Σ_lines exp(-λ·d).  POINTS strength = Σ_lines V(line)·exp(-λ·d).
+ * Distance is joker-aware (from the engine). V() is illustrative until Phase 0 verified.
+ */
+const E = require('./engine.js');
+const META = require('./card-meta.js');
+const LAMBDA = 0.8;
+const lineMeta = META.buildMeta();
+const V = key => (lineMeta.get(key)?.points ?? 25);
+const isConcealedKey = key => (lineMeta.get(key)?.concealed ?? false);
+
+function objScoreFromLineMin(lineMin, objective) {
+  let s = 0;
+  for (const [k, d] of lineMin) { const w = Math.exp(-LAMBDA * d); s += objective === 'POINTS' ? V(k) * w : w; }
+  return s;
+}
+function objScore(tiles, objective) { return objScoreFromLineMin(E.analyzeStatic(tiles).lineMin, objective); }
+
+function bestLine(tiles, objective) {
+  const lm = E.analyzeStatic(tiles).lineMin; let best = null;
+  for (const [k, d] of lm) {
+    const sc = objective === 'POINTS' ? V(k) * Math.exp(-LAMBDA * d) : Math.exp(-LAMBDA * d);
+    if (!best || sc > best.score) best = { key: k, dist: d, score: sc, section: k.split(' | ')[0] };
+  }
+  return best;
+}
+
+// keepValue: drop in objScore when one copy of a tile is removed. Ascending = most passable.
+function keepValue(tiles, objective) {
+  const base = objScore(tiles, objective);
+  const counts = new Map(); for (const t of tiles) counts.set(t, (counts.get(t) || 0) + 1);
+  const res = [];
+  for (const [t] of counts) {
+    if (t === 'JK') { res.push({ tile: t, kv: Infinity }); continue; }
+    const reduced = tiles.slice(); reduced.splice(reduced.indexOf(t), 1);
+    res.push({ tile: t, kv: base - objScore(reduced, objective) });
+  }
+  res.sort((a, b) => a.kv - b.kv);
+  return res;
+}
+
+// performance: pre-order target groups (non-jokerable first) ONCE so the hot loop
+// never re-sorts. fastNeeded mirrors engine coverage without the per-call sort.
+let _ordered = null;
+function orderedTargets() {
+  if (_ordered) return _ordered;
+  _ordered = E.buildTargets().map(t => ({
+    section: t.section, name: t.name,
+    groups: t.groups.slice().sort((a, b) => (a.jokerable ? 1 : 0) - (b.jokerable ? 1 : 0)),
+  }));
+  return _ordered;
+}
+function fastNeeded(groups, hp) {
+  let jk = hp.jokers, filled = 0; const local = new Map();
+  for (const g of groups) {
+    let need = g.count; const used = local.get(g.tile) || 0;
+    const have = (hp.pool.get(g.tile) || 0) - used;
+    const ur = Math.min(have, need); local.set(g.tile, used + ur); need -= ur; filled += ur;
+    if (g.jokerable && need > 0) { const uj = Math.min(jk, need); jk -= uj; filled += uj; }
+  }
+  return 14 - filled;
+}
+
+// shortlist of concrete targets (for fast play + win detection)
+function shortlist(tiles, objective, window = 4, cap = 60) {
+  const hp = E.handPool(tiles); let best = 99; const arr = [];
+  for (const t of orderedTargets()) { const d = fastNeeded(t.groups, hp); if (d < best) best = d; arr.push([t, d]); }
+  const cand = arr.filter(([, d]) => d <= best + window).sort((a, b) => a[1] - b[1]).slice(0, cap).map(([t, d]) => ({ target: t, d }));
+  let committed = cand[0];
+  if (objective === 'POINTS') {
+    let bsc = -1; for (const c of cand) { const sc = V(c.target.section + ' | ' + c.target.name) * Math.exp(-LAMBDA * c.d); if (sc > bsc) { bsc = sc; committed = c; } }
+  }
+  return { best, cand, committed };
+}
+
+function isWinningRack(tiles, candCache) {
+  const hp = E.handPool(tiles);
+  const list = candCache ? candCache.map(c => c.target) : orderedTargets();
+  for (const t of list) if (fastNeeded(t.groups, hp) === 0) return t;
+  return null;
+}
+
+module.exports = { LAMBDA, V, isConcealedKey, objScore, objScoreFromLineMin, bestLine, keepValue, shortlist, isWinningRack };
+
+};
+__modules['./kernel.js'] = function(module, exports, require){
+/* Phase 1 — deficiency & acceptance kernel.
+ *
+ * Correction C1: a CONCEALED hand makes no exposures, so it cannot CALL a discard
+ * for any slot. Jokers are still legal in its pung+ groups (self-draw places them),
+ * so concealment changes `claimable`, NOT the per-slot acceptance set. The cost of
+ * concealment is the loss of the claim channel (≈3 opponents' discards), applied in
+ * the opportunity term of the scorer (Phase 3), not here.
+ */
+const E = require('./engine.js');
+
+function unseenFromRack(rackTiles, extraSeen = []) {
+  const m = E.fullPool();
+  for (const t of rackTiles.concat(extraSeen)) m.set(t, (m.get(t) || 0) - 1);
+  return m;
+}
+
+// per-group fill detail against a rack (jokers from rack), mirrors engine coverage
+function fillDetail(target, hp) {
+  const groups = target.groups.map(g => ({ tile: g.tile, count: g.count, jokerable: g.jokerable, fnat: 0, fjok: 0, remaining: g.count }));
+  const order = groups.slice().sort((a, b) => (a.jokerable ? 1 : 0) - (b.jokerable ? 1 : 0));
+  const local = new Map(); let jk = hp.jokers;
+  for (const g of order) {
+    let need = g.count;
+    const used = local.get(g.tile) || 0;
+    const have = (hp.pool.get(g.tile) || 0) - used;
+    const useReal = Math.min(have, need); local.set(g.tile, used + useReal); need -= useReal; g.fnat = useReal;
+    if (g.jokerable && need > 0) { const uj = Math.min(jk, need); jk -= uj; need -= uj; g.fjok = uj; }
+    g.remaining = need;
+  }
+  return groups;
+}
+
+// D(P) and per-slot acceptance for ONE concrete target, given a rack + unseen pool.
+function acceptanceForTarget(target, rackTiles, unseenMap, concealed) {
+  const hp = E.handPool(rackTiles);
+  const groups = fillDetail(target, hp);
+  const jokUnseen = unseenMap.get('JK') || 0;
+  const slots = [];
+  for (const g of groups) {
+    for (let s = 0; s < g.remaining; s++) {
+      const natural = unseenMap.get(g.tile) || 0;
+      const acc = natural + (g.jokerable ? jokUnseen : 0);
+      const claimable = g.jokerable && !concealed; // C1
+      slots.push({ tile: g.tile, acceptance: acc, claimable, jokerable: g.jokerable });
+    }
+  }
+  const deficiency = slots.length;
+  const minAccept = slots.length ? Math.min(...slots.map(s => s.acceptance)) : Infinity;
+  const drawOnlySlots = slots.filter(s => !s.claimable).length;
+  const usableJokerSlots = slots.filter(s => s.jokerable).length;
+  return { deficiency, slots, minAccept, drawOnlySlots, usableJokerSlots };
+}
+
+module.exports = { unseenFromRack, fillDetail, acceptanceForTarget };
+
+};
+__modules['./charleston2.js'] = function(module, exports, require){
+/* Phase 6 + Part 2 B.1 — Charleston decision-quality engine.
+ *  - keepValue de-duplicated by strategic direction (section), fixing C2.
+ *  - incoming tiles are policy-driven (a naive neighbor sheds its isolated tiles),
+ *    i.e. junk-biased, not uniform — first-order fix for A.1 / C6.
+ *  - Common Random Numbers: the same incoming bank scores every candidate, so the
+ *    paired difference V(best)-V(a) has low variance (B.3).
+ *  - Outputs EV-loss, percentile, and a "statistical dead heat" flag when the CRN
+ *    paired CI vs the best pass does not separate from zero (B.1 + A.3).
+ */
+const E = require('./engine.js');
+const META = require('./card-meta.js');
+const stats = require('./stats.js');
+const LAMBDA = 0.8;
+const secV = s => META.pointsFor(s);
+
+// ---- de-duplicated objective strength: best distance PER SECTION, not per line (C2)
+function objScoreDedup(tiles, objective) {
+  const lm = E.analyzeStatic(tiles).lineMin; const bySec = new Map();
+  for (const [k, d] of lm) { const s = k.split(' | ')[0]; if (d < (bySec.get(s) ?? 99)) bySec.set(s, d); }
+  let total = 0;
+  for (const [s, d] of bySec) { const w = Math.exp(-LAMBDA * d); total += objective === 'POINTS' ? secV(s) * w : w; }
+  return total;
+}
+function keepValueDedup(tiles, objective) {
+  const base = objScoreDedup(tiles, objective);
+  const seen = new Set(); const res = [];
+  for (let i = 0; i < tiles.length; i++) {
+    const t = tiles[i]; if (t === 'JK' || seen.has(t)) continue; seen.add(t);
+    const reduced = tiles.slice(); reduced.splice(i, 1);
+    res.push({ tile: t, kv: base - objScoreDedup(reduced, objective) });
+  }
+  res.sort((a, b) => a.kv - b.kv);
+  return res;
+}
+
+const removeTiles = (rack, tiles) => { const r = rack.slice(); for (const t of tiles) { const i = r.indexOf(t); if (i >= 0) r.splice(i, 1); } return r; };
+const avg = a => a.reduce((x, y) => x + y, 0) / a.length;
+
+// policy-driven incoming: your LEFT neighbor (random rack from the unseen pool) sheds
+// its 3 most isolated tiles. Independent of which 3 YOU pass -> identical across
+// candidates given a seed => true Common Random Numbers.
+function sampleIncoming(yourRack, seed) {
+  const rng = stats.mulberry32(seed);
+  const rem = E.fullPool(); for (const t of yourRack) rem.set(t, (rem.get(t) || 0) - 1);
+  const pool = []; for (const [t, n] of rem) for (let i = 0; i < n; i++) pool.push(t);
+  for (let i = pool.length - 1; i > 0; i--) { const j = (rng() * (i + 1)) | 0;[pool[i], pool[j]] = [pool[j], pool[i]]; }
+  const nbr = pool.slice(0, 13);
+  const c = new Map(); for (const t of nbr) c.set(t, (c.get(t) || 0) + 1);
+  // naive shed: lowest-duplicate, non-joker, isolated tiles first
+  const shed = nbr.filter(t => t !== 'JK').sort((a, b) => (c.get(a) - c.get(b)));
+  return shed.slice(0, 3);
+}
+
+function buildCandidatePasses(rack, kv, topK) {
+  // funnel: take the bottom (most-passable) ~7 distinct tiles, enumerate 3-combos
+  const pool = [];
+  const c = new Map(); for (const t of rack) c.set(t, (c.get(t) || 0) + 1);
+  for (const { tile } of kv) { let n = c.get(tile); while (n-- > 0) pool.push(tile); if (pool.length >= 7) break; }
+  const combos = [], seen = new Set();
+  for (let a = 0; a < pool.length; a++) for (let b = a + 1; b < pool.length; b++) for (let d = b + 1; d < pool.length; d++) {
+    const trio = [pool[a], pool[b], pool[d]]; const key = trio.slice().sort().join(',');
+    if (seen.has(key)) continue; seen.add(key); combos.push(trio);
+  }
+  return combos.slice(0, topK);
+}
+
+function choosePass(yourRack, objective = 'WINS', opts = {}) {
+  const seeds = stats.crnSeeds(opts.seeds ?? 60, opts.master ?? 999);
+  const incomingBank = seeds.map(sd => sampleIncoming(yourRack, sd));
+  const kv = keepValueDedup(yourRack, objective);
+  const candidates = buildCandidatePasses(yourRack, kv, opts.topK ?? 14);
+
+  const results = candidates.map(a => {
+    const base = removeTiles(yourRack, a);
+    const vals = incomingBank.map(inc => objScoreDedup(base.concat(inc), objective));
+    return { pass: a, V: avg(vals), vals };
+  });
+  results.sort((x, y) => y.V - x.V);
+  const best = results[0];
+  const Vs = results.map(r => r.V);
+  results.forEach(r => {
+    r.evLoss = best.V - r.V;                                   // strength units
+    r.percentile = 100 * (Vs.filter(v => v <= r.V).length - 1) / Math.max(1, Vs.length - 1);
+    const diffs = best.vals.map((bv, j) => bv - r.vals[j]);    // paired under CRN (B.3)
+    r.vsBest = stats.pairedDiffCI(diffs);
+    r.deadHeatWithBest = r !== best && !r.vsBest.separated;    // CI overlaps 0 -> tie (A.3)
+  });
+  return { best, results, policyVersion: stats.ROLLOUT_POLICY.version, seeds: seeds.length };
+}
+
+// grade a player's ACTUAL pass against the optimum (EV-loss / percentile) — the
+// mahjong "centipawn loss", luck-independent (B.1)
+function gradePass(yourRack, actualPass, objective = 'WINS', opts = {}) {
+  const res = choosePass(yourRack, objective, opts);
+  const seeds = stats.crnSeeds(opts.seeds ?? 60, opts.master ?? 999);
+  const incomingBank = seeds.map(sd => sampleIncoming(yourRack, sd));
+  const base = removeTiles(yourRack, actualPass);
+  const vals = incomingBank.map(inc => objScoreDedup(base.concat(inc), objective));
+  const V = avg(vals);
+  const evLoss = res.best.V - V;
+  const allV = res.results.map(r => r.V).concat([V]);
+  const percentile = 100 * (allV.filter(v => v <= V).length - 1) / Math.max(1, allV.length - 1);
+  const diffs = res.best.vals.map((bv, j) => bv - vals[j]);
+  return { V, evLoss, percentile, best: res.best.pass, deadHeat: !stats.pairedDiffCI(diffs).separated, policyVersion: res.policyVersion };
+}
+
+module.exports = { objScoreDedup, keepValueDedup, sampleIncoming, choosePass, gradePass };
+
+};
+__modules['./divergence.js'] = function(module, exports, require){
+/* Phase 8 — game-type sensitivity detector.
+ * Computes the recommended hand under WINS and POINTS; only when they disagree does
+ * it raise a "depends on game type" callout, with both options and the crossover.
+ * Crossover: prefer higher-value B over higher-prob A iff V_B/V_A > P_A/P_B.
+ */
+const S = require('./score.js');
+
+function detect(rack) {
+  const w = S.bestLine(rack, 'WINS');     // highest completion-probability line
+  const p = S.bestLine(rack, 'POINTS');   // highest EV line
+  const sensitive = w.key !== p.key;
+  if (!sensitive) return { sensitive: false, pick: w };
+  // probability proxy via distance; value via points
+  const Pw = Math.exp(-S.LAMBDA * w.dist), Pp = Math.exp(-S.LAMBDA * p.dist);
+  const Vw = S.V(w.key), Vp = S.V(p.key);
+  const probRatio = Pw / Pp, valueRatio = Vp / Vw;
+  return {
+    sensitive: true,
+    wins: { line: w.key, section: w.section, dist: w.dist, pApprox: Pw },
+    points: { line: p.key, section: p.section, dist: p.dist, value: Vp, pApprox: Pp },
+    trade: { valueRatio: +valueRatio.toFixed(2), probRatio: +probRatio.toFixed(2),
+      reason: `points pick is worth ${valueRatio.toFixed(1)}x but ~${Math.round(100 * (1 - Pp / Pw))}% less likely` },
+    crossover: `points choice wins once it is worth > ${probRatio.toFixed(2)}x the safe hand`,
+  };
+}
+
+module.exports = { detect };
+
+};
+__modules['./observer.js'] = function(module, exports, require){
+/* Phase 7 + Part 2 B.10 — online opponent characterization.
+ * Categorical posterior over each opponent's section, updated from the tiles they
+ * pass you (a seat sheds tiles it does NOT need -> evidence against sections that use
+ * those tiles). "Hints not conclusions": start uniform, decay, never assert.
+ *
+ * The deliverable is a MEASUREMENT first (principle 6): does the posterior actually
+ * beat a uniform prior at predicting an opponent's section? The Dealer's ground truth
+ * lets us score it with log-loss instead of asserting the heuristic works.
+ */
+const E = require('./engine.js');
+
+const SECTIONS = [...new Set(E.CARD.map(l => l.section))];
+
+// CHARACTERISTIC number-theme of each section — the discriminative signal. "Appears
+// anywhere" is too blunt (most number tiles appear in almost every section), so we key
+// on each section's bread-and-butter tiles: a player sheds their OWN theme last.
+function suitVal(t) { return (t.length === 2 && 'BCD'.includes(t[1]) && t[0] >= '1' && t[0] <= '9') ? t[0] : null; }
+function isWindDragon(t) { return (t[0] === 'W' && 'NEWS'.includes(t[1])) || ['DG', 'DR', 'DW'].includes(t); }
+const CHAR = {
+  '2468': t => ['2', '4', '6', '8'].includes(suitVal(t)),
+  '13579': t => ['1', '3', '5', '7', '9'].includes(suitVal(t)),
+  '369': t => ['3', '6', '9'].includes(suitVal(t)),
+  '2026': t => ['2', '6'].includes(suitVal(t)) || t === 'DW',
+  'W-D': t => isWindDragon(t),
+};                                  // Consec / Like Nos / Quints / S&P have no sharp theme
+
+function newPosterior() { const p = {}; for (const s of SECTIONS) p[s] = 1 / SECTIONS.length; return p; }
+
+// A seat that passes you tile t is shedding it -> evidence AGAINST sections whose theme
+// includes t, mild evidence FOR a themed section when t is off-theme. Non-themed sections
+// carry no number signal (honest: the Charleston can't distinguish them).
+function updateWithPassedTile(post, tile, opts = {}) {
+  const down = opts.down ?? 0.45, up = opts.up ?? 1.12;
+  let z = 0;
+  for (const s of SECTIONS) {
+    const pred = CHAR[s];
+    let L = 1;
+    if (pred) L = pred(tile) ? down : up;   // themed sections only
+    post[s] *= L; z += post[s];
+  }
+  for (const s of SECTIONS) post[s] /= (z || 1);
+  return post;
+}
+
+// build seat-0's posteriors over the other three seats from the Charleston observations
+function inferFrom(observations, decay = 1.0) {
+  const posts = {}; // fromSeat -> posterior
+  for (const o of observations) {
+    if (!posts[o.fromSeat]) posts[o.fromSeat] = newPosterior();
+    for (const t of o.tiles) updateWithPassedTile(posts[o.fromSeat], t);
+  }
+  return posts;
+}
+
+function argmax(post) { let bs = null, bv = -1; for (const s in post) if (post[s] > bv) { bv = post[s]; bs = s; } return { section: bs, p: bv }; }
+function logLossAgainst(post, trueSection) { const e = 1e-9; return -Math.log(Math.max(e, post[trueSection] || 0)); }
+const uniformLogLoss = () => -Math.log(1 / SECTIONS.length);
+
+module.exports = { SECTIONS, CHAR, newPosterior, updateWithPassedTile, inferFrom, argmax, logLossAgainst, uniformLogLoss };
+
+};
+__modules['./direction.js'] = function(module, exports, require){
+/* Part 3 Zone 1 — Direction engine.
+ * Aggregates the portfolio to SECTION level (robust: per-hand noise cancels) and
+ * reports a lean + a commit/stay-flexible signal. W(S) blends current presence
+ * (exp(-λ·bestDistance) in the section) with an empirical base-rate prior.
+ * Prior is ILLUSTRATIVE (from the multi-agent sim's section win-share + pair-hardness).
+ */
+const E = require('./engine.js');
+const LAMBDA = 0.8;
+const SECTIONS = [...new Set(E.CARD.map(l => l.section))];
+
+// illustrative base rates: Consec common, S&P rare (from Phase-4 sim + §6 anchor direction)
+const PRIOR = { 'Consec': 0.22, '2468': 0.16, '13579': 0.13, 'Like Nos': 0.12, '369': 0.10, '2026': 0.09, 'W-D': 0.08, 'Quints': 0.06, 'S&P': 0.04 };
+
+function sectionBestDist(rack) {
+  const lm = E.analyzeStatic(rack).lineMin; const m = {};
+  for (const [k, d] of lm) { const s = k.split(' | ')[0]; if (d < (m[s] ?? 99)) m[s] = d; }
+  return m;
+}
+function weights(rack) {
+  const bd = sectionBestDist(rack); const W = {}; let z = 0;
+  for (const s of SECTIONS) { const d = bd[s] ?? 14; const w = Math.exp(-LAMBDA * d) * (PRIOR[s] ?? 0.05); W[s] = w; z += w; }
+  for (const s of SECTIONS) W[s] /= (z || 1);
+  return W;
+}
+function concentration(W) {
+  let H = 0; for (const s of SECTIONS) { const p = W[s]; if (p > 0) H -= p * Math.log(p); }
+  return 1 - H / Math.log(SECTIONS.length);   // 0 = flat (stay flexible), 1 = single direction
+}
+function compass(rack, passIndex = 0) {
+  const W = weights(rack);
+  const sorted = Object.entries(W).sort((a, b) => b[1] - a[1]);
+  const conc = concentration(W);
+  const flexPremium = Math.max(0, 1 - passIndex / 6);   // keeping a backup is cheap early, costly late
+  const top = sorted[0], second = sorted[1];
+  // commit when the direction is concentrated OR the leader is strong; weight by how late it is
+  const commit = conc > 0.30 || top[1] > 0.40 || (passIndex >= 4 && top[1] > 0.30);
+  const guidance = commit
+    ? `Commit your passes to ${top[0]}` + (second[1] > 0.18 && flexPremium > 0.3 ? `; hold one ${second[0]} pivot for one more round.` : '.')
+    : `No clear direction yet — pass only obvious junk, keep ${top[0]} and ${second[0]} both alive.`;
+  return { weights: W, sorted, concentration: conc, flexPremium, top, second, commit, guidance };
+}
+
+module.exports = { SECTIONS, PRIOR, weights, concentration, compass };
+
+};
+__modules['./tileAdvice.js'] = function(module, exports, require){
+/* Part 3 Zone 3 — Tile Tray. Per-tile action + justification + immediate & long-term effect.
+ *  - action from keepValueDedup (PASS≈0, KEEP high, FLEX mid); jokers/Flowers/Soap protected.
+ *  - immediate = marginal change in your CURRENT best hand's deficiency if removed now.
+ *  - longTerm  = effect on direction concentration / option value (the keepValue itself).
+ */
+const E = require('./engine.js');
+const CH = require('./charleston2.js');
+const S = require('./score.js');
+const DIR = require('./direction.js');
+const OBS = require('./observer.js');
+
+const bestDist = rack => S.shortlist(rack, 'WINS').best;
+const isHighUtil = t => t === 'FL' || t === 'DW';
+
+function advise(rack, objective = 'WINS', ledger = null, opts = {}) {
+  const kv = CH.keepValueDedup(rack, objective);            // distinct non-joker tiles, ascending kv
+  const kvMap = new Map(kv.map(x => [x.tile, x.kv]));
+  const maxKv = Math.max(...kv.map(x => x.kv), 1e-9);
+  const base = bestDist(rack);
+  // "core" tiles belong to the LEADING DIRECTION (robust), not the single closest hand (noisy).
+  const comp = DIR.compass(rack, opts.passIndex || 0);
+  const lead = comp.top[0];
+  const hp = E.handPool(rack);
+  let leadTarget = null, leadD = 99;
+  for (const t of E.buildTargets()) { if (t.section !== lead) continue; const d = E.tilesNeeded(t, hp); if (d < leadD) { leadD = d; leadTarget = t; } }
+  const needLead = new Set(); if (leadTarget) for (const g of leadTarget.groups) needLead.add(g.tile);
+  const themePred = OBS.CHAR[lead] || (() => false);
+  const isCore = t => themePred(t) || needLead.has(t);
+  const counts = new Map(); for (const t of rack) counts.set(t, (counts.get(t) || 0) + 1);
+  const distinct = [...new Set(rack)];
+
+  const advice = distinct.map(t => {
+    const kvVal = t === 'JK' ? Infinity : (kvMap.get(t) ?? 0);
+    // immediate
+    let immediate;
+    if (t === 'JK') immediate = 'Illegal to pass; fills your pung/kong slots right now.';
+    else { const r = rack.slice(); r.splice(r.indexOf(t), 1); const dd = bestDist(r) - base;
+      immediate = dd <= 0 ? 'No effect on your current best hand.' : `Sets your best hand back ${dd} tile${dd > 1 ? 's' : ''}.`; }
+    // action + long-term
+    let action, longTerm;
+    if (t === 'JK') { action = 'KEEP'; longTerm = 'Each joker ≈ +12% win prob; lives in pung/kong-heavy hands.'; }
+    else if (isHighUtil(t)) { action = 'KEEP'; longTerm = 'Scarce and cross-useful — holding keeps several lines open at once.'; }
+    else if (isCore(t) || kvVal >= 0.5 * maxKv) { action = 'KEEP'; longTerm = 'Anchors your live direction (' + lead + '); a member of the hand you are building.'; }
+    else if (kvVal <= 0.05 * maxKv) { action = 'PASS'; longTerm = 'Dead pivot — sheds toward your committed direction and leaks least.'; }
+    else { action = 'FLEX'; longTerm = 'Backup-section pivot; keep one more pass while cheap, then re-decide.'; }
+    // constraints
+    const constraints = [];
+    if (t === 'JK') constraints.push('JOKER_NEVER_PASS');
+    if ((counts.get(t) || 0) >= 2 && kvVal > 0 && kvVal !== Infinity) constraints.push('DONT_SPLIT_PAIR');
+    if (isHighUtil(t)) constraints.push('HIGH_UTILITY');
+    if (ledger && typeof ledger.defensiveFlag === 'function' && ledger.defensiveFlag(t)) constraints.push('DEFENSIVE_FLAG');
+    const confidence = (t === 'JK' || isHighUtil(t)) ? 'high' : (action === 'FLEX' ? 'med' : 'high');
+    return { tile: t, action, keepValue: kvVal === Infinity ? null : +kvVal.toFixed(4), immediate, longTerm, constraints, confidence };
+  });
+
+  // recommended pass = 3 lowest-keepValue non-jokers (consistent with charleston2)
+  const pass = kv.filter(x => x.tile !== 'JK').slice(0, 3).map(x => x.tile);
+  // coherent-group warning: would the pass hand one seat a usable set? (same number across suits / run)
+  const coherent = isCoherent(pass);
+  return { advice, pass, coherentGroupWarn: coherent };
+}
+
+function isCoherent(three) {
+  const vals = three.map(t => (t.length === 2 && 'BCD'.includes(t[1])) ? +t[0] : null).filter(v => v != null);
+  if (vals.length === 3) {
+    if (new Set(vals).size === 1) return 'same number — feeds Like Numbers';
+    const s = vals.slice().sort((a, b) => a - b);
+    if (s[1] === s[0] + 1 && s[2] === s[1] + 1) return 'consecutive run — feeds Consec';
+  }
+  const suits = three.map(t => t[1]);
+  if (three.every(t => t.length === 2 && 'BCD'.includes(t[1])) && new Set(suits).size === 1) return 'all one suit';
+  return null;
+}
+
+module.exports = { advise, isCoherent };
+
+};
+__modules['./calibrated.js'] = function(module, exports, require){
+/* B.9 — calibrated win-probability predictor, fit to the multi-agent MC ground truth.
+ * ECE ~2.5% on held-out self-play (vs ~15% for the old reachMass->CALIB predictor).
+ * Dominant learned feature: drawOnly (pair/single slots) — the pair-hardness [DERIV] from data.
+ */
+const E = require('./engine.js');
+const S = require('./score.js');
+const K = require('./kernel.js');
+const W = {"feat":["best","rm","jokers","drawOnly","minAcc","ent"],"mean":[5.199810606060606,0.09443475378787879,0.7054924242424242,2.115530303030303,4.635416666666667,1.0957035984848476],"std":[1.1251430726031741,0.0654391134611657,0.7805690328818555,1.746724559990972,2.3873553059173953,0.374946958655798],"beta":[-1.332089034904413,-0.272096614472194,0.152252296861723,0.11993446068678076,-0.35047005487712757,0.09748362293388202,-0.00954767541836356],"policyVersion":"0.1.0-greedy"};
+
+function features(rack) {
+  const lm = E.analyzeStatic(rack).lineMin;
+  let best = 99, rm = 0; for (const [, d] of lm) { if (d < best) best = d; rm += Math.exp(-0.8 * d); }
+  const jokers = rack.filter(t => t === 'JK').length;
+  const sl = S.shortlist(rack, 'WINS'); const tgt = sl.committed ? sl.committed.target : null;
+  let drawOnly = 0, minAcc = 0;
+  if (tgt) { const a = K.acceptanceForTarget(tgt, rack, K.unseenFromRack(rack), false); drawOnly = a.drawOnlySlots; minAcc = isFinite(a.minAccept) ? a.minAccept : 0; }
+  const c = { B: 0, C: 0, D: 0 }; let tot = 0;
+  for (const t of rack) if (t.length === 2 && 'BCD'.includes(t[1]) && t[0] >= '1' && t[0] <= '9') { c[t[1]]++; tot++; }
+  let H = 0; if (tot) for (const s of 'BCD') { const p = c[s] / tot; if (p > 0) H -= p * Math.log2(p); }
+  return [best, rm, jokers, drawOnly, minAcc, H];
+}
+function predictP(rack) {
+  const f = features(rack); let z = W.beta[0];
+  for (let j = 0; j < W.feat.length; j++) z += W.beta[j + 1] * ((f[j] - W.mean[j]) / W.std[j]);
+  return 1 / (1 + Math.exp(-z));
+}
+module.exports = { features, predictP, WEIGHTS: W, policyVersion: W.policyVersion };
+
+};
+__modules['./dealer.js'] = function(module, exports, require){
+/* Phase 2 — the Dealer (the spine).
+ *
+ * Holds ONE conserved 152-tile deal, runs four engine instances over private views,
+ * routes the full Charleston (R1, R2 w/ stop vote, courtesy), and enforces:
+ *   - conservation: multiset(racks ∪ wall ∪ dealerExtra) == fullPool at all times
+ *   - jokers never move between racks
+ *   - information hygiene: a policy only ever sees its PrivateView
+ * Blind passing is decision-capable in policies but executed off by default in v1
+ * (kept simple to guarantee conservation); see Phase 6 notes.
+ */
+const E = require('./engine.js');
+
+function mulberry32(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+
+function flatPool() { const a = []; for (const [t, n] of E.fullPool()) for (let i = 0; i < n; i++) a.push(t); return a; }
+
+function deal(seed = 1) {
+  const rng = mulberry32(seed);
+  const pool = flatPool();
+  for (let i = pool.length - 1; i > 0; i--) { const j = (rng() * (i + 1)) | 0;[pool[i], pool[j]] = [pool[j], pool[i]]; }
+  const racks = [pool.slice(0, 13), pool.slice(13, 26), pool.slice(26, 39), pool.slice(39, 52)];
+  const dealerExtra = pool[52];        // goes to East (seat 0) at start of play
+  const wall = pool.slice(53);          // 99 tiles
+  return { racks, dealerExtra, wall, rng };
+}
+
+// conservation: full multiset is invariant
+function multisetKey(tiles) { const m = new Map(); for (const t of tiles) m.set(t, (m.get(t) || 0) + 1); return m; }
+function assertConserved(state) {
+  const all = [].concat(...state.racks, state.wall, [state.dealerExtra]);
+  if (all.length !== 152) return 'tile count ' + all.length + ' != 152';
+  const a = multisetKey(all), full = E.fullPool();
+  for (const [t, n] of full) if ((a.get(t) || 0) !== n) return 'mismatch ' + t + ' ' + (a.get(t) || 0) + '/' + n;
+  for (const [t] of a) if (!full.has(t)) return 'unknown tile ' + t;
+  return null;
+}
+
+// remove a multiset of tiles from a rack array (by value); returns true if all removed
+function removeTiles(rack, tiles) {
+  for (const t of tiles) { const i = rack.indexOf(t); if (i < 0) return false; rack.splice(i, 1); }
+  return true;
+}
+
+// sanitize a policy's proposed pass: exactly 3 tiles, all present in rack, NO jokers
+function sanitizePass(rack, proposed) {
+  const out = []; const work = rack.slice();
+  for (const t of (proposed || [])) {
+    if (t === 'JK') continue;
+    const i = work.indexOf(t);
+    if (i >= 0 && out.length < 3) { out.push(t); work.splice(i, 1); }
+  }
+  // backfill from remaining non-joker tiles if policy under-supplied
+  for (const t of work) { if (out.length >= 3) break; if (t !== 'JK') out.push(t); }
+  return out.slice(0, 3);
+}
+
+const NB = { // give-target for seat i
+  R: i => (i + 1) % 4, A: i => (i + 2) % 4, L: i => (i + 3) % 4,
+};
+
+function privateView(state, seat, observations, pub) {
+  return { seat, ownRack: state.racks[seat].slice(), observations: observations[seat].slice(), publicState: pub };
+}
+
+// execute one directional pass for all four seats simultaneously
+function doPass(state, dir, policies, observations, passIndex, round, jokerGuard) {
+  const give = NB[dir];
+  const outgoing = [];
+  for (let i = 0; i < 4; i++) {
+    const view = privateView(state, i, observations, { passIndex, round, direction: dir });
+    const pass = sanitizePass(state.racks[i], policies[i].selectPass(view));
+    if (pass.includes('JK')) throw new Error('joker in pass (seat ' + i + ')'); // hygiene/legality
+    if (!removeTiles(state.racks[i], pass)) throw new Error('pass tile not in rack');
+    outgoing.push(pass);
+  }
+  // distribute
+  for (let i = 0; i < 4; i++) {
+    const j = give(i);
+    for (const t of outgoing[i]) state.racks[j].push(t);
+    observations[j].push({ fromSeat: i, direction: dir, passIndex, round, tiles: outgoing[i].slice(), blind: false });
+  }
+  const err = assertConserved(state); if (err) throw new Error('conservation broken after ' + dir + ': ' + err);
+  if (jokerGuard) jokerGuard(state, 'pass ' + dir);
+}
+
+function courtesy(state, policies, observations, pub) {
+  // across pairs: (0,2) and (1,3)
+  for (const [a, b] of [[0, 2], [1, 3]]) {
+    const va = privateView(state, a, observations, pub), vb = privateView(state, b, observations, pub);
+    const k = Math.max(0, Math.min(3, policies[a].courtesyOffer(va), policies[b].courtesyOffer(vb)));
+    if (k === 0) continue;
+    const pa = sanitizePass(state.racks[a], policies[a].selectPass(va)).slice(0, k);
+    const pb = sanitizePass(state.racks[b], policies[b].selectPass(vb)).slice(0, k);
+    if (pa.length !== k || pb.length !== k) continue;
+    removeTiles(state.racks[a], pa); removeTiles(state.racks[b], pb);
+    for (const t of pb) state.racks[a].push(t);
+    for (const t of pa) state.racks[b].push(t);
+    observations[a].push({ fromSeat: b, direction: 'courtesy', tiles: pb.slice(), blind: false });
+    observations[b].push({ fromSeat: a, direction: 'courtesy', tiles: pa.slice(), blind: false });
+  }
+  const err = assertConserved(state); if (err) throw new Error('conservation broken after courtesy: ' + err);
+}
+
+function runCharleston(policies, opts = {}) {
+  const state = deal(opts.seed ?? 1);
+  const observations = [[], [], [], []];
+  // joker positions per rack must be invariant across passes
+  const jokerCounts = state.racks.map(r => r.filter(t => t === 'JK').length);
+  const jokerGuard = (st) => { st.racks.forEach((r, i) => { if (r.filter(t => t === 'JK').length !== jokerCounts[i]) throw new Error('joker moved at seat ' + i); }); };
+
+  let pi = 0;
+  // R1: right, across, left
+  for (const dir of ['R', 'A', 'L']) doPass(state, dir, policies, observations, pi++, 1, jokerGuard);
+  // R2 optional: proceeds only if ALL seats vote to continue (any one can stop)
+  const pub2 = { passIndex: pi, round: 2 };
+  const votesStop = policies.map((p, i) => p.stopVote(privateView(state, i, observations, pub2)));
+  const r2 = !votesStop.some(Boolean);
+  if (r2) for (const dir of ['L', 'A', 'R']) doPass(state, dir, policies, observations, pi++, 2, jokerGuard);
+  // courtesy across
+  courtesy(state, policies, observations, { passIndex: pi, round: 3 });
+
+  return { racks: state.racks, observations, wall: state.wall, dealerExtra: state.dealerExtra,
+    ranR2: r2, votesStop, conserved: assertConserved(state) === null };
+}
+
+module.exports = { deal, assertConserved, runCharleston, sanitizePass, privateView, mulberry32, flatPool };
+
+};
+__modules['./policies.js'] = function(module, exports, require){
+/* Phase 3 — the policy zoo. Distinguishable Charleston strategies so the opponent
+ * model (Phase 7) has something to detect. Each policy only ever sees a PrivateView.
+ */
+const S = require('./score.js');
+
+const nonJoker = rack => rack.filter(t => t !== 'JK');
+const counts = rack => { const m = new Map(); for (const t of rack) m.set(t, (m.get(t) || 0) + 1); return m; };
+
+// --- score-driven policy (objective-parameterized): pass lowest keepValue 3 ---
+function scorePolicy(objective, name) {
+  return {
+    name,
+    selectPass(v) {
+      const kv = S.keepValue(v.ownRack, objective).filter(x => x.tile !== 'JK');
+      const out = []; const c = counts(v.ownRack);
+      for (const { tile } of kv) { let avail = c.get(tile) || 0; while (avail-- > 0 && out.length < 3) out.push(tile); if (out.length >= 3) break; }
+      return out.slice(0, 3);
+    },
+    stopVote(v) { const bl = S.bestLine(v.ownRack, objective); return bl.dist <= 2; }, // stop only when near-made
+    courtesyOffer(v) { return Math.min(3, S.keepValue(v.ownRack, objective).filter(x => x.tile !== 'JK' && x.kv <= 1e-9).length); },
+    blindDecision() { return false },
+  };
+}
+
+// --- naive: pass the most isolated singletons (fewest duplicates, no real structure) ---
+const naivePolicy = {
+  name: 'naive',
+  selectPass(v) {
+    const c = counts(v.ownRack);
+    const cand = nonJoker(v.ownRack).slice().sort((a, b) => (c.get(a) - c.get(b)) || 0);
+    const seen = new Set(); const out = [];
+    for (const t of cand) { out.push(t); if (out.length >= 3) break; }
+    return out.slice(0, 3);
+  },
+  stopVote() { return false }, courtesyOffer() { return 0 }, blindDecision() { return false },
+};
+
+// --- random: pass 3 random non-jokers ---
+function randomPolicy(rng) {
+  return {
+    name: 'random',
+    selectPass(v) { const nj = nonJoker(v.ownRack).slice(); for (let i = nj.length - 1; i > 0; i--) { const j = (rng() * (i + 1)) | 0;[nj[i], nj[j]] = [nj[j], nj[i]]; } return nj.slice(0, 3); },
+    stopVote() { return false }, courtesyOffer() { return 0 }, blindDecision() { return false },
+  };
+}
+
+const winsFlexible = scorePolicy('WINS', 'wins-flexible');
+const pointsChaser = scorePolicy('POINTS', 'points-chaser');
+
+module.exports = { scorePolicy, winsFlexible, pointsChaser, naivePolicy, randomPolicy };
+
+};
+__modules['./ledger.js'] = function(module, exports, require){
+/* Part 3 Zone 5 — the Information Ledger.
+ * Records only the player's OWN certain actions (what you passed/received and when),
+ * derives decaying "holds" beliefs and a tentative section-lean, and exposes a snapshot
+ * STRICTLY bounded by the fair-play rule (§2.2): never any opponent hidden tile.
+ *
+ * Honest design: positive section-lean is suppressed/greyed during the Charleston because
+ * the engine MEASURED that signal to be ≈ chance (observer.js). The clean early read is the
+ * NEGATIVE one — "not collecting" — surfaced from the classes a seat dumped on you.
+ */
+const OBS = require('./observer.js');
+const DECAY = 0.77;   // ≈ (1 − 3/13): a seat sheds ~3 of ~13 tiles each later pass-out (§7.2)
+
+function newLedger() { return { passedOut: {}, received: {}, holds: {}, sectionLean: {}, notReturned: new Set(), public: [] }; }
+const ens = (o, s) => (o[s] = o[s] || {});
+
+function decayAll(L) { for (const s in L.holds) for (const t in L.holds[s]) L.holds[s][t] *= DECAY; }
+
+function recordPass(L, seat, tiles, passIndex) {           // you handed `seat` these tiles
+  const po = ens(L.passedOut, seat), h = ens(L.holds, seat);
+  for (const t of tiles) { (po[t] = po[t] || []).push(passIndex); h[t] = 1.0; L.notReturned.add(t); }
+}
+function recordReceive(L, seat, tiles, passIndex) {        // `seat` handed you these (they're shedding them)
+  const r = ens(L.received, seat);
+  for (const t of tiles) { (r[t] = r[t] || []).push(passIndex); L.notReturned.delete(t); }
+  if (!L.sectionLean[seat]) L.sectionLean[seat] = OBS.newPosterior();
+  for (const t of tiles) OBS.updateWithPassedTile(L.sectionLean[seat], t);
+}
+
+// sections a seat is demonstrably NOT collecting = themes whose characteristic tiles they passed you
+function notCollecting(L, seat) {
+  const out = new Set(); const r = L.received[seat] || {};
+  for (const t in r) for (const sec in OBS.CHAR) if (OBS.CHAR[sec](t)) out.add(sec);
+  return [...out];
+}
+
+// fair-play: during the Charleston we intentionally do NOT raise a hard defensive flag — the
+// measured opponent signal is too weak. The hook exists for the wall phase (public data).
+function defensiveFlag() { return false; }
+
+// snapshot for the UI — ONLY player-derived facts + inferences, never an opponent's rack
+function snapshot(L) {
+  const seats = {};
+  for (const seat of [1, 2, 3]) {
+    const h = L.holds[seat] || {};
+    const solid = [], faded = [];
+    for (const t in h) { if (h[t] >= 0.999) solid.push(t); else if (h[t] > 0.05) faded.push({ tile: t, p: +h[t].toFixed(2) }); }
+    const lean = L.sectionLean[seat] ? OBS.argmax(L.sectionLean[seat]) : null;
+    seats[seat] = {
+      solidHolds: solid,                              // confidence 1.0 — you handed these over
+      fadedHolds: faded.sort((a, b) => b.p - a.p),    // decaying belief they still hold them
+      notCollecting: notCollecting(L, seat),          // the clean early read
+      lean: lean ? { section: lean.section, p: +lean.p.toFixed(2), tentative: true } : null, // greyed: ≈chance
+    };
+  }
+  return { seats, notReturned: [...L.notReturned] };
+}
+
+module.exports = { newLedger, decayAll, recordPass, recordReceive, notCollecting, defensiveFlag, snapshot, DECAY };
+
+};
+__modules['./session.js'] = function(module, exports, require){
+/* Part 3 — interactive Charleston SESSION (the panel spine).
+ *  sim mode   : seats 1-3 are policy agents; applyPass(my3) auto-returns what you receive.
+ *  manual mode: live-table use; applyPass(my3, received3) — you type the 3 tiles you got.
+ * Either way the caller only ever sees seat 0's information set (fair-play, §2.2).
+ */
+const E = require('./engine.js');
+const dealer = require('./dealer.js');
+const P = require('./policies.js');
+const LED = require('./ledger.js');
+
+const NB = { R: i => (i + 1) % 4, A: i => (i + 2) % 4, L: i => (i + 3) % 4 };   // give-to
+const RECV = { R: i => (i + 3) % 4, A: i => (i + 2) % 4, L: i => (i + 1) % 4 }; // receive-from
+
+function flatRemaining(yourRack) {
+  const m = E.fullPool(); for (const t of yourRack) m.set(t, (m.get(t) || 0) - 1);
+  const a = []; for (const [t, n] of m) for (let i = 0; i < n; i++) a.push(t); return a;
+}
+
+function newSession(opts = {}) {
+  const mode = opts.mode || 'sim';
+  const rng = dealer.mulberry32(opts.seed ?? 1);
+  let racks, wall = [], dealerExtra = null, policies = [null, null, null, null];
+
+  if (mode === 'sim') {
+    if (opts.yourRack) {
+      const pool = flatRemaining(opts.yourRack);
+      for (let i = pool.length - 1; i > 0; i--) { const j = (rng() * (i + 1)) | 0;[pool[i], pool[j]] = [pool[j], pool[i]]; }
+      racks = [opts.yourRack.slice(), pool.slice(0, 13), pool.slice(13, 26), pool.slice(26, 39)];
+      dealerExtra = pool[39]; wall = pool.slice(40);
+    } else { const d = dealer.deal(opts.seed ?? 1); racks = d.racks; wall = d.wall; dealerExtra = d.dealerExtra; }
+    const opp = opts.opponents || [P.winsFlexible, P.winsFlexible, P.winsFlexible];
+    policies = [null, opp[0], opp[1], opp[2]];
+  } else {
+    if (!opts.yourRack) throw new Error('manual mode requires yourRack');
+    racks = [opts.yourRack.slice(), null, null, null]; // only seat 0 tracked
+  }
+
+  const observations = [[], [], [], []];
+  const ledger = LED.newLedger();
+  const seq = [{ d: 'R', r: 1 }, { d: 'A', r: 1 }, { d: 'L', r: 1, blind: true }];
+  let idx = 0, phase = 'pass', ranR2 = false, done = false;
+
+  function oppPass(s, dir) {
+    const pv = { seat: s, ownRack: racks[s].slice(), observations: observations[s].slice(), publicState: { passIndex: idx, round: seq[idx].r, direction: dir } };
+    const p = dealer.sanitizePass(racks[s], policies[s].selectPass(pv));
+    for (const t of p) racks[s].splice(racks[s].indexOf(t), 1);
+    return p;
+  }
+
+  function applyPass(my3, received3) {
+    if (phase !== 'pass') throw new Error('not at a pass step (phase=' + phase + ')');
+    const step = seq[idx], dir = step.d;
+    const my = dealer.sanitizePass(racks[0], my3);
+    for (const t of my) racks[0].splice(racks[0].indexOf(t), 1);
+
+    let recv;
+    if (mode === 'sim') {
+      const outgoing = [my, oppPass(1, dir), oppPass(2, dir), oppPass(3, dir)];
+      for (let s = 0; s < 4; s++) { const j = NB[dir](s); for (const t of outgoing[s]) racks[j].push(t); observations[j].push({ fromSeat: s, direction: dir, passIndex: idx, tiles: outgoing[s].slice() }); }
+      recv = observations[0].filter(o => o.passIndex === idx)[0].tiles.slice();
+    } else {
+      if (!received3 || received3.length !== 3) throw new Error('manual mode: supply the 3 tiles you received');
+      recv = received3.slice(); for (const t of recv) racks[0].push(t);
+    }
+
+    LED.decayAll(ledger);
+    LED.recordPass(ledger, NB[dir](0), my, idx);
+    LED.recordReceive(ledger, RECV[dir](0), recv, idx);
+    idx++;
+    if (idx >= seq.length) phase = ranR2 ? 'done' : 'stop';
+    if (phase === 'done') done = true;
+    return { received: recv, ownRack: racks[0].slice(), passed: my };
+  }
+
+  // R2 decision after R1. In sim mode opponents vote; R2 runs only if ALL continue.
+  function decideR2(humanContinue) {
+    if (phase !== 'stop') throw new Error('not at the stop decision');
+    let proceed = !!humanContinue;
+    if (mode === 'sim' && proceed) {
+      const votesStop = [1, 2, 3].some(s => policies[s].stopVote({ seat: s, ownRack: racks[s].slice(), observations: observations[s].slice(), publicState: {} }));
+      proceed = proceed && !votesStop;
+    }
+    if (proceed) { seq.push({ d: 'L', r: 2 }, { d: 'A', r: 2 }, { d: 'R', r: 2, blind: true }); ranR2 = true; phase = 'pass'; }
+    else { phase = 'done'; done = true; }
+    return { ranR2: proceed };
+  }
+
+  function state() {
+    const step = seq[idx];
+    return {
+      mode, phase, done,
+      passIndex: idx, round: step ? step.r : null, direction: step ? step.d : null,
+      blindEligible: !!(step && step.blind),
+      ownRack: racks[0].slice(),
+      jokers: racks[0].filter(t => t === 'JK').length,
+      ledger: LED.snapshot(ledger),
+    };
+  }
+  // teaching/replay ONLY (sim mode): the legitimate place for full state (§7.4)
+  function revealForReplay() { return mode === 'sim' ? { racks: racks.map(r => r.slice()) } : null; }
+
+  return { mode, applyPass, decideR2, state, ledger, revealForReplay };
+}
+
+module.exports = { newSession };
+
+};
+
+window.Lab={ engine:require('./engine.js'), stats:require('./stats.js'), score:require('./score.js'),
+  ch:require('./charleston2.js'), div:require('./divergence.js'), dir:require('./direction.js'),
+  ta:require('./tileAdvice.js'), cal:require('./calibrated.js'), session:require('./session.js') };
+</script>
+<script>(function () {
+  'use strict';
+  const L = window.Lab, E = L.engine;
+  let objective = 'WINS', sess = null, selected = [];
+
+  function meta(c) {
+    if (c === 'JK') return { cls: 'joker', num: 'JKR', suit: 'jok' };
+    if (c === 'FL') return { cls: 'flower', num: '✿', suit: 'flw' };
+    if (c === 'DG') return { cls: 'dragon g', num: 'GRN', suit: 'drg' };
+    if (c === 'DR') return { cls: 'dragon r', num: 'RED', suit: 'drg' };
+    if (c === 'DW') return { cls: 'dragon w', num: '◻0', suit: 'soap' };
+    if (c[0] === 'W') return { cls: 'wind', num: c[1], suit: 'wind' };
+    return { cls: { B: 'bam', C: 'crak', D: 'dot' }[c[1]], num: c[0], suit: { B: 'Bam', C: 'Crak', D: 'Dot' }[c[1]] };
+  }
+  function tileNode(c, sm, cls) { const m = meta(c), d = document.createElement('div'); d.className = 'tile ' + m.cls + (sm ? ' sm' : '') + (cls ? ' ' + cls : ''); d.innerHTML = '<span class="num">' + m.num + '</span><span class="suit">' + m.suit + '</span>'; return d; }
+
+  function deal13() { const p = []; for (const [t, n] of E.fullPool()) for (let i = 0; i < n; i++) p.push(t); for (let i = p.length - 1; i > 0; i--) { const j = (Math.random() * (i + 1)) | 0;[p[i], p[j]] = [p[j], p[i]]; } return p.slice(0, 13); }
+  function start() { sess = L.session.newSession({ mode: 'sim', yourRack: deal13(), seed: (Math.random() * 1e9) | 0 }); selected = []; renderAll(); }
+
+  function renderAll() {
+    const st = sess.state();
+    document.getElementById('tempo').textContent = 'policy ' + L.stats.ROLLOUT_POLICY.version;
+    if (st.phase === 'stop') return renderStop(st);
+    if (st.phase === 'done') return renderDone(st);
+    renderDirection(st); renderPortfolio(st); renderTray(st); renderBuilder(st); renderLedger(st); renderState(st);
+  }
+
+  function renderPortfolio(st) {
+    const p = L.cal.predictP(st.ownRack);
+    const sl = L.score.shortlist(st.ownRack, objective);
+    const seen = new Set(), lines = [];
+    for (const c of sl.cand) { const key = c.target.section + '|' + c.target.name; if (seen.has(key)) continue; seen.add(key); lines.push({ sec: c.target.section, nm: c.target.name.split(/\s+/)[0], d: c.d }); if (lines.length >= 5) break; }
+    let h = '<div class="big" style="color:var(--good)">' + Math.round(100 * p) + '% <span class="muted" style="font-weight:400;font-size:12px">P(reach mahjong) — calibrated</span></div>';
+    h += '<div class="prov">ECE ~2.5% on held-out self-play · policy ' + L.cal.policyVersion + '</div>';
+    h += '<table><tr><th>closest hands</th><th>away</th></tr>';
+    for (const l of lines) h += '<tr><td>' + l.sec + ' ' + l.nm + '</td><td>' + l.d + '</td></tr>';
+    h += '</table>';
+    document.getElementById('portfolio').innerHTML = h;
+  }
+
+  function renderDirection(st) {
+    const c = L.dir.compass(st.ownRack, st.passIndex);
+    let h = '';
+    c.sorted.slice(0, 4).forEach(([s, w]) => { h += '<div class="dirbar"><span class="nm">' + s + '</span><div class="bar"><span style="width:' + Math.round(100 * w) + '%"></span></div><span class="muted">' + Math.round(100 * w) + '%</span></div>'; });
+    h += '<div class="muted" style="margin-top:6px">' + (c.commit ? '🎯 ' : '🧭 ') + c.guidance + ' <span class="prov">concentration ' + c.concentration.toFixed(2) + '</span></div>';
+    document.getElementById('dir').innerHTML = h;
+  }
+
+  function renderTray(st) {
+    const adv = L.ta.advise(st.ownRack, objective, null, { passIndex: st.passIndex });
+    const byTile = {}; adv.advice.forEach(a => byTile[a.tile] = a);
+    const ord = c => c === 'JK' ? 99 : c === 'FL' ? 90 : c[0] === 'D' ? 80 : c[0] === 'W' ? 70 : ({ B: 0, C: 10, D: 20 }[c[1]]) + (+c[0]);
+    const tray = document.getElementById('tray'); tray.innerHTML = '';
+    const row = document.createElement('div'); row.className = 'tray';
+    st.ownRack.map((c, i) => i).sort((a, b) => ord(st.ownRack[a]) - ord(st.ownRack[b])).forEach(i => {
+      const c = st.ownRack[i], a = byTile[c];
+      const wrap = document.createElement('div'); wrap.className = 'tilewrap';
+      const t = tileNode(c, false, a.action + (selected.includes(i) ? ' sel' : ''));
+      t.addEventListener('click', () => { const k = selected.indexOf(i); if (k >= 0) selected.splice(k, 1); else if (selected.length < 3 && c !== 'JK') selected.push(i); renderAll(); });
+      wrap.appendChild(t);
+      const lab = document.createElement('div'); lab.className = 'muted'; lab.style.cssText = 'font-size:10px;text-align:center;margin-top:2px'; lab.textContent = a.action; wrap.appendChild(lab);
+      const ex = document.createElement('div'); ex.className = 'explain'; ex.innerHTML = '<b>Now:</b> ' + a.immediate + '<br><b>Later:</b> ' + a.longTerm + (a.constraints.length ? '<br><i>' + a.constraints.join(', ') + '</i>' : '');
+      wrap.appendChild(ex);
+      wrap.addEventListener('mouseenter', () => wrap.classList.add('open')); wrap.addEventListener('mouseleave', () => wrap.classList.remove('open'));
+      row.appendChild(wrap);
+    });
+    tray.appendChild(row);
+    document.getElementById('trayhint').innerHTML = 'Hover a tile for its immediate / long-term effect. Recommended pass: <b>' + adv.pass.map(c => meta(c).num).join(' ') + '</b>' + (adv.coherentGroupWarn ? ' · ⚠ ' + adv.coherentGroupWarn : '') + '. Click 3 tiles to assemble your pass.';
+  }
+
+  function renderBuilder(st) {
+    const b = document.getElementById('builder');
+    if (selected.length < 3) { b.innerHTML = '<div class="muted">Select ' + (3 - selected.length) + ' more tile(s) in the tray to build your pass.</div>'; return; }
+    const pass = selected.map(i => st.ownRack[i]);
+    const g = L.ch.gradePass(st.ownRack, pass, objective, { seeds: 36 });
+    const row = document.createElement('div'); row.style.cssText = 'display:flex;gap:6px;margin-bottom:6px'; pass.forEach(c => row.appendChild(tileNode(c, true)));
+    const tie = g.deadHeat ? ' <span class="pill dead">≈ optimal (dead heat)</span>' : '';
+    const verdict = g.evLoss < 1e-6 ? '<b style="color:var(--good)">Optimal pass.</b>' : (g.deadHeat ? 'Statistically tied with the best.' : 'EV-loss <b>' + g.evLoss.toFixed(4) + '</b> vs best — best is <b>' + g.best.map(c => meta(c).num).join(' ') + '</b>.');
+    b.innerHTML = '<div>' + row.outerHTML + '</div><div class="muted">' + verdict + tie + '</div>' +
+      '<div style="margin-top:8px"><button id="confirm">Confirm pass ' + (st.direction === 'R' ? '→ right' : st.direction === 'L' ? '→ left' : '↔ across') + '</button></div>' +
+      '<div class="prov">EV-loss in strength units · CRN ' + 36 + ' shared incoming · policy ' + g.policyVersion + '</div>';
+    document.getElementById('confirm').addEventListener('click', () => { const res = sess.applyPass(pass); selected = []; flashReceived(res.received); renderAll(); });
+  }
+
+  function flashReceived(r) { const s = document.getElementById('state'); if (s) s.dataset.recv = r.join(' '); }
+
+  function renderLedger(st) {
+    const led = st.ledger; let h = '';
+    for (const seat of [1, 2, 3]) {
+      const s = led.seats[seat];
+      h += '<div class="seat"><div class="hd">Seat ' + seat + (seat === 1 ? ' (right)' : seat === 3 ? ' (left)' : ' (across)') + '</div>';
+      if (s.solidHolds.length) { h += '<div class="chips">'; s.solidHolds.forEach(t => h += '<span class="ledchip">' + meta(t).num + '</span>'); h += ' <span class="muted" style="font-size:10px">just handed over</span></div>'; }
+      if (s.fadedHolds.length) { h += '<div class="chips">'; s.fadedHolds.forEach(f => h += '<span class="ledchip faded">' + meta(f.tile).num + ' ' + Math.round(100 * f.p) + '%</span>'); h += '</div>'; }
+      if (s.notCollecting.length) h += '<div class="notcol">✗ not collecting: ' + s.notCollecting.join(', ') + '</div>';
+      if (s.lean) h += '<div class="lean">lean (tentative): ' + s.lean.section + ' ' + Math.round(100 * s.lean.p) + '%</div>';
+      if (!s.solidHolds.length && !s.fadedHolds.length && !s.notCollecting.length) h += '<div class="muted">nothing yet</div>';
+      h += '</div>';
+    }
+    document.getElementById('ledger').innerHTML = h;
+  }
+
+  function renderState(st) {
+    const names = ['right', 'across', 'left', 'left', 'across', 'right'];
+    document.getElementById('state').innerHTML =
+      '<div class="big">Pass ' + (st.passIndex + 1) + ' · R' + st.round + ' ' + (st.direction === 'R' ? '→ right' : st.direction === 'L' ? '→ left' : '↔ across') + (st.blindEligible ? ' · blind-eligible' : '') + '</div>' +
+      '<div class="muted">Jokers in hand: <b>' + st.jokers + '</b> · ' + (st.jokers ? '~+12% win prob each — never pass' : 'none yet') + '</div>' +
+      (st.ledger.notReturned.length ? '<div class="muted">You passed, never saw again: ' + st.ledger.notReturned.map(c => meta(c).num).join(' ') + '</div>' : '') +
+      '<div class="prov">Spend deliberation here — empirically ~16.7s/Charleston decision vs ~3.5s in play.</div>';
+  }
+
+  function renderStop(st) {
+    renderDirection(st); renderTray({ ...st, passIndex: 3 }); renderLedger(st); renderState(st);
+    document.getElementById('builder').innerHTML = '<div class="big">Second Charleston?</div>' +
+      '<div class="muted">Continue only if you have ≥3 clearly passable tiles. Habitual stopping is a flagged myth.</div>' +
+      '<div style="margin-top:8px;display:flex;gap:8px"><button id="cont">Continue (R2)</button><button class="ghost" id="stop">Stop here</button></div>';
+    document.getElementById('cont').addEventListener('click', () => { sess.decideR2(true); selected = []; renderAll(); });
+    document.getElementById('stop').addEventListener('click', () => { sess.decideR2(false); selected = []; renderAll(); });
+  }
+
+  function renderDone(st) {
+    renderDirection(st); renderLedger(st); renderState(st);
+    const c = L.dir.compass(st.ownRack, 6);
+    document.getElementById('tray').innerHTML = '<div class="rec">Charleston complete. Final direction: <b>' + c.top[0] + '</b>. Your hand is set for the wall.</div>';
+    document.getElementById('trayhint').textContent = '';
+    // replay reveal (sim only) — legitimate full-state teaching view
+    const rv = sess.revealForReplay();
+    let h = '<div class="big">Replay reveal (teaching)</div><table><tr><th>Seat</th><th>Your read</th><th>Actual direction</th></tr>';
+    for (const seat of [1, 2, 3]) {
+      const led = st.ledger.seats[seat]; const truth = L.score.bestLine(rv.racks[seat], 'WINS').section;
+      const read = led.lean ? led.lean.section : '—';
+      h += '<tr><td>' + seat + '</td><td class="muted">' + read + (led.notCollecting.length ? ' (not ' + led.notCollecting.join('/') + ')' : '') + '</td><td><b>' + truth + '</b></td></tr>';
+    }
+    h += '</table><div class="prov">Full state is shown only here, post-game — a teaching aid, never live.</div>';
+    document.getElementById('builder').innerHTML = h;
+  }
+
+  function wire() {
+    document.getElementById('new').addEventListener('click', start);
+    document.querySelectorAll('#obj button').forEach(b => b.addEventListener('click', () => { objective = b.dataset.o; document.querySelectorAll('#obj button').forEach(x => x.classList.toggle('on', x === b)); if (sess) renderAll(); }));
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', wire); else wire();
+})();
+</script>
+</body></html>

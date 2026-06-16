@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Charleston Lab — American Mahjongg study tool</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { font: 16px/1.6 system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+         max-width: 720px; margin: 0 auto; padding: 2.5rem 1.25rem; }
+  h1 { font-size: 1.7rem; margin-bottom: .25rem; }
+  p.tag { color: #666; margin-top: 0; }
+  ul { list-style: none; padding: 0; display: grid; gap: .75rem; }
+  li a { display: block; padding: .9rem 1.1rem; border: 1px solid #8884;
+         border-radius: 10px; text-decoration: none; }
+  li a:hover { border-color: #888; background: #8881; }
+  .t { font-weight: 600; }
+  .d { color: #777; font-size: .9rem; }
+  footer { margin-top: 2rem; color: #888; font-size: .85rem; }
+</style>
+</head>
+<body>
+  <h1>Charleston Lab</h1>
+  <p class="tag">A practice &amp; study guide for the American Mahjongg Charleston (2026 NMJL card).</p>
+  <ul>
+    <li><a href="charleston-lab-v3.html"><span class="t">Control Panel (v3)</span><br><span class="d">Six-zone study panel — direction, portfolio, pass builder, information ledger, replay reveal.</span></a></li>
+    <li><a href="charleston-lab-v2.html"><span class="t">Decision Quality (v2)</span><br><span class="d">EV-loss grading of your pass choices.</span></a></li>
+    <li><a href="charleston-lab.html"><span class="t">Hand Rater (v1)</span><br><span class="d">Static starting-hand and direction rater.</span></a></li>
+    <li><a href="app.mobile.html"><span class="t">Mobile PWA</span><br><span class="d">Installable, offline-capable mobile shell.</span></a></li>
+  </ul>
+  <footer>
+    Source on <a href="https://github.com/mondrianaire/mahjong">GitHub</a>.
+    Probabilities are calibrated to a greedy rollout policy; point values are illustrative. See README / CLAUDE.md.
+  </footer>
+</body>
+</html>

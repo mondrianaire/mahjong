@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Charleston Lab — American Mahjongg Hand Rater (2026 NMJL)</title>
+<style>
+  :root{
+    --bg:#f4efe6; --panel:#fffdf8; --ink:#241f1a; --muted:#7a7066; --line:#e3d9c8;
+    --bam:#2f7d44; --crak:#b83227; --dot:#2660a4; --soap:#6b6f76; --wind:#4a3f8f;
+    --flower:#c2780a; --joker:#8a3ea0; --accent:#b8862a; --good:#2f7d44; --warn:#b8702a; --bad:#b83227;
+    --shadow:0 1px 3px rgba(60,45,20,.12);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.5;}
+  .wrap{max-width:1180px;margin:0 auto;padding:24px 20px 80px;}
+  header.top{display:flex;align-items:baseline;justify-content:space-between;gap:16px;flex-wrap:wrap;
+    border-bottom:2px solid var(--accent);padding-bottom:14px;margin-bottom:22px;}
+  header.top h1{font-size:23px;margin:0;letter-spacing:.2px;}
+  header.top h1 .sub{color:var(--accent);}
+  header.top .tag{color:var(--muted);font-size:13px;}
+  .grid{display:grid;grid-template-columns:1.05fr .95fr;gap:22px;}
+  @media(max-width:920px){.grid{grid-template-columns:1fr;}}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;
+    padding:18px;box-shadow:var(--shadow);}
+  .panel h2{font-size:13px;text-transform:uppercase;letter-spacing:.10em;color:var(--muted);
+    margin:0 0 12px;font-weight:700;}
+  /* tiles */
+  .tile{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;
+    width:46px;height:60px;border-radius:8px;background:#fff;border:1px solid #d8cdb8;
+    box-shadow:0 1px 0 #d8cdb8, inset 0 0 0 2px #fff;cursor:pointer;user-select:none;
+    transition:transform .05s ease, box-shadow .1s ease;position:relative;}
+  .tile:hover{transform:translateY(-2px);box-shadow:0 4px 8px rgba(60,45,20,.16);}
+  .tile .num{font-size:24px;font-weight:800;line-height:1;}
+  .tile .suit{font-size:9px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin-top:2px;}
+  .tile.bam .num{color:var(--bam)} .tile.crak .num{color:var(--crak)} .tile.dot .num{color:var(--dot)}
+  .tile.wind .num{color:var(--wind);font-size:20px} .tile.dragon .num{font-size:13px;font-weight:800}
+  .tile.dragon.g .num{color:var(--bam)} .tile.dragon.r .num{color:var(--crak)} .tile.dragon.w .num{color:var(--soap)}
+  .tile.flower .num{color:var(--flower);font-size:18px} .tile.joker .num{color:var(--joker);font-size:13px;font-weight:800}
+  .tile.sm{width:38px;height:50px;} .tile.sm .num{font-size:20px}
+  .palette-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;align-items:center;}
+  .palette-row .lab{width:54px;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;}
+  .hand-area{min-height:74px;display:flex;flex-wrap:wrap;gap:7px;padding:10px;border:1px dashed var(--line);
+    border-radius:10px;background:#fbf7ee;margin:6px 0 12px;}
+  .hand-area .tile{cursor:pointer}
+  .hand-area .tile::after{content:"×";position:absolute;top:-7px;right:-6px;width:16px;height:16px;border-radius:50%;
+    background:var(--bad);color:#fff;font-size:11px;line-height:16px;text-align:center;opacity:0;transition:opacity .1s}
+  .hand-area .tile:hover::after{opacity:1}
+  .controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:6px}
+  button{font:inherit;font-weight:600;border:1px solid var(--accent);background:var(--accent);color:#fff;
+    padding:9px 16px;border-radius:8px;cursor:pointer;box-shadow:var(--shadow);}
+  button.ghost{background:#fff;color:var(--ink);border-color:var(--line)}
+  button:active{transform:translateY(1px)}
+  button:disabled{opacity:.45;cursor:not-allowed}
+  .count{font-size:13px;color:var(--muted);margin-left:auto}
+  .count b{color:var(--ink)}
+  .slider{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
+  .slider input{width:120px}
+  /* rating */
+  .rating{display:flex;align-items:center;gap:18px;margin-bottom:8px}
+  .gauge{--p:0;width:120px;height:120px;border-radius:50%;flex:none;
+    background:conic-gradient(var(--accent) calc(var(--p)*1%), #ece3d2 0);
+    display:flex;align-items:center;justify-content:center;position:relative;}
+  .gauge::before{content:"";position:absolute;inset:11px;border-radius:50%;background:var(--panel)}
+  .gauge .val{position:relative;text-align:center}
+  .gauge .val .big{font-size:30px;font-weight:800;line-height:1}
+  .gauge .val .lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+  .verdict .tier{font-size:22px;font-weight:800}
+  .verdict .desc{font-size:13px;color:var(--muted);max-width:280px}
+  .metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
+  .metric{background:#fbf7ee;border:1px solid var(--line);border-radius:9px;padding:10px}
+  .metric .k{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+  .metric .v{font-size:21px;font-weight:800;margin-top:2px}
+  .metric .v small{font-size:12px;font-weight:600;color:var(--muted)}
+  .targets{margin-top:4px}
+  .targets .row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--line);font-size:13px}
+  .targets .row:last-child{border-bottom:0}
+  .targets .sec{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;
+    color:#fff;background:var(--accent);border-radius:5px;padding:2px 7px;flex:none}
+  .targets .nm{flex:1;font-variant-numeric:tabular-nums}
+  .targets .d{font-weight:800;color:var(--accent)}
+  .pass{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0}
+  .pass .tile{border-color:var(--bad);box-shadow:0 0 0 2px rgba(184,50,39,.18)}
+  .passrow{display:grid;grid-template-columns:96px auto 1fr 70px;align-items:center;gap:12px;
+    padding:8px 10px;border:1px solid var(--line);border-radius:9px;margin-bottom:8px;background:#fbf7ee}
+  .passrow.best{border-color:var(--good);background:#f1f7ee}
+  .passlabel{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+  .passrow.best .passlabel{color:var(--good)}
+  .passtiles{display:flex;gap:5px}
+  .passtiles .tile.rec{border-color:var(--good);box-shadow:0 0 0 2px rgba(47,125,68,.22)}
+  .passbar{height:8px;background:#e8dfce;border-radius:6px;overflow:hidden}
+  .passbar span{display:block;height:100%;background:var(--accent)}
+  .passrow.best .passbar span{background:var(--good)}
+  .passev{font-weight:800;font-variant-numeric:tabular-nums;text-align:right;font-size:13px}
+  .hint{font-size:12.5px;color:var(--muted);margin-top:6px}
+  .notes{font-size:12.5px;color:var(--muted)}
+  details summary{cursor:pointer;font-weight:600;color:var(--ink)}
+  .empty{color:var(--muted);font-size:13px;align-self:center;margin:auto}
+  .badge{display:inline-block;font-size:11px;background:#efe6d2;border:1px solid var(--line);
+    border-radius:20px;padding:2px 9px;color:var(--muted)}
+  code{background:#efe6d2;padding:1px 5px;border-radius:4px;font-size:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1>Charleston Lab <span class="sub">·</span> <span style="font-weight:600">Hand Rater</span></h1>
+    <div class="tag">2026 NMJL card · P(reach mahjong), solo model · Milestones 1–2</div>
+  </header>
+
+  <div class="grid">
+    <section class="panel">
+      <h2>1 · Build a starting hand <span class="badge" id="cardBadge">2026 card</span></h2>
+      <div id="palette"></div>
+      <h2 style="margin-top:16px">Your hand</h2>
+      <div class="hand-area" id="hand"></div>
+      <div class="controls">
+        <button id="analyzeBtn">Analyze hand</button>
+        <button class="ghost" id="dealBtn">Deal random 13</button>
+        <button class="ghost" id="clearBtn">Clear</button>
+        <span class="count">Tiles: <b id="ct">0</b>/13</span>
+      </div>
+      <div class="controls" style="margin-top:12px">
+        <span class="slider">Draws (K): <input type="range" id="drawsR" min="6" max="30" value="16"><b id="drawsV">16</b></span>
+        <span class="slider">Sims: <input type="range" id="simsR" min="500" max="6000" step="500" value="2500"><b id="simsV">2500</b></span>
+      </div>
+      <p class="hint">Click palette tiles to add (max 13, max 4 of any tile / 8 jokers / 8 flowers). Click a hand tile to remove it.</p>
+    </section>
+
+    <section class="panel" id="resultPanel">
+      <h2>2 · Rating</h2>
+      <div id="result"><div class="empty">Build or deal a hand, then press <b>Analyze</b>.</div></div>
+    </section>
+  </div>
+
+  <section class="panel" style="margin-top:22px">
+    <h2>3 · Nearest hands &amp; Charleston suggestion</h2>
+    <div id="detail"><div class="empty" style="margin:0">Analysis appears here.</div></div>
+  </section>
+
+  <section class="panel" style="margin-top:22px">
+    <details>
+      <summary>Modeling notes &amp; assumptions</summary>
+      <div class="notes" style="margin-top:10px">
+        <p><b>Rating = P(reach mahjong), solo model.</b> We hold your 13 tiles and draw <code>K</code> tiles
+        from the unseen wall (no opponents, no calling/exposures). The rating is the fraction of Monte-Carlo
+        trials in which <i>some</i> 2026 card hand becomes fully coverable from hand + draws, with jokers
+        substituting only in groups of 3+ (never pairs/singles, never soap-as-zero singles). <code>K</code>
+        is the "draws available" knob — a full wall is ~24–25 picks; ~16 reflects a realistic competitive game.</p>
+        <p><b>Distance</b> = minimum tiles still needed to complete the closest concrete target (joker-aware).
+        <b>Reach-mass</b> = Σ exp(−0.8·d) over all card lines — a single deterministic strength surrogate
+        that correlates with the Monte-Carlo probability at r=0.89 (R²≈0.80) and carries the strongest
+        independent signal of any metric (partial r=0.75 controlling for distance &amp; jokers). It is the
+        fast inner-loop scorer the Charleston optimizer uses, so passes can be ranked without a full MC each.</p>
+        <p><b>Charleston optimizer.</b> Every distinct 3-tile pass is scored by expected post-pass reach-mass,
+        averaging over sampled tiles you receive (modeled as random from the unseen pool — a later version can
+        weight by opponents' likely discards). This beats the v1 "drop your 3 worst by distance" heuristic:
+        e.g. on a hand building a Bam run, the heuristic would shed a run tile, while the optimizer keeps the
+        structure and passes the isolated tiles instead.</p>
+        <p><b>Card source.</b> All 9 sections / 72 lines of the 2026 card are encoded (≈1,083 concrete targets vs.
+        NMJL's stated 1,077). A handful of multi-suit lines have an inferred suit-colour partition (marked
+        <code>~role-inferred</code> in <code>engine.js</code>); correct against your physical card for exact analysis.</p>
+        <p><b>Known approximations.</b> The optimizer fixes the candidate-hand set from your dealt hand and scores
+        with reach-mass rather than a full MC per pass (for speed); received tiles are uniform-random from the
+        unseen pool. These are the next things to refine.</p>
+      </div>
+    </details>
+  </section>
+</div>
+
+<script>
+/* ENGINE_PLACEHOLDER */
+</script>
+<script>
+/* UI_PLACEHOLDER */
+</script>
+</body>
+</html>

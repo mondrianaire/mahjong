@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Charleston Lab v2 — Decision-Quality Engine (2026 NMJL)</title>
+<style>
+  :root{--bg:#f4efe6;--panel:#fffdf8;--ink:#241f1a;--muted:#7a7066;--line:#e3d9c8;
+    --bam:#2f7d44;--crak:#b83227;--dot:#2660a4;--soap:#6b6f76;--wind:#4a3f8f;--flower:#c2780a;--joker:#8a3ea0;
+    --accent:#b8862a;--good:#2f7d44;--warn:#b8702a;--bad:#b83227;--shadow:0 1px 3px rgba(60,45,20,.12);}
+  *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.5}
+  .wrap{max-width:1120px;margin:0 auto;padding:22px 20px 80px}
+  header.top{display:flex;align-items:baseline;justify-content:space-between;gap:16px;flex-wrap:wrap;
+    border-bottom:2px solid var(--accent);padding-bottom:12px;margin-bottom:20px}
+  header.top h1{font-size:21px;margin:0}header.top .tag{color:var(--muted);font-size:12.5px}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;box-shadow:var(--shadow);margin-bottom:18px}
+  h2{font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin:0 0 10px;font-weight:700}
+  .tile{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;width:42px;height:54px;
+    border-radius:8px;background:#fff;border:1px solid #d8cdb8;cursor:pointer;user-select:none;position:relative}
+  .tile .num{font-size:21px;font-weight:800;line-height:1}.tile .suit{font-size:8px;text-transform:uppercase;color:var(--muted);margin-top:2px}
+  .tile.sm{width:34px;height:44px}.tile.sm .num{font-size:17px}
+  .tile.bam .num{color:var(--bam)}.tile.crak .num{color:var(--crak)}.tile.dot .num{color:var(--dot)}
+  .tile.wind .num{color:var(--wind);font-size:17px}.tile.dragon .num{font-size:12px}.tile.dragon.g .num{color:var(--bam)}
+  .tile.dragon.r .num{color:var(--crak)}.tile.dragon.w .num{color:var(--soap)}.tile.flower .num{color:var(--flower);font-size:16px}
+  .tile.joker .num{color:var(--joker);font-size:12px}
+  .row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;align-items:center}.row .lab{width:54px;font-size:11px;color:var(--muted)}
+  .hand{min-height:64px;display:flex;flex-wrap:wrap;gap:6px;padding:10px;border:1px dashed var(--line);border-radius:10px;background:#fbf7ee;margin:6px 0}
+  button{font:inherit;font-weight:600;border:1px solid var(--accent);background:var(--accent);color:#fff;padding:8px 15px;border-radius:8px;cursor:pointer}
+  button.ghost{background:#fff;color:var(--ink);border-color:var(--line)}button:disabled{opacity:.45;cursor:not-allowed}
+  .seg{display:inline-flex;border:1px solid var(--accent);border-radius:8px;overflow:hidden}
+  .seg button{border:0;border-radius:0;background:#fff;color:var(--ink);padding:7px 14px}
+  .seg button.on{background:var(--accent);color:#fff}
+  .controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:8px}
+  .count{font-size:13px;color:var(--muted);margin-left:auto}
+  .callout{border:1px solid var(--warn);background:#fbf3e6;border-radius:10px;padding:12px;margin-top:6px}
+  .callout .h{font-weight:800;color:var(--warn);margin-bottom:6px}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}.opt{background:#fbf7ee;border:1px solid var(--line);border-radius:9px;padding:10px}
+  .opt .k{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}.opt .v{font-weight:800;font-size:15px}
+  table{width:100%;border-collapse:collapse;font-size:13px}td,th{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line)}
+  th{font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+  .pill{display:inline-block;font-size:10px;padding:1px 7px;border-radius:20px;background:#efe6d2;color:var(--muted)}
+  .pill.rec{background:var(--good);color:#fff}.pill.dead{background:#e8dfce;color:var(--muted)}
+  .big{font-size:30px;font-weight:800}.muted{color:var(--muted);font-size:12.5px}
+  .prov{font-size:11px;color:var(--muted)}.empty{color:var(--muted);font-size:13px}
+</style></head>
+<body><div class="wrap">
+  <header class="top"><h1>Charleston Lab <span style="color:var(--accent)">v2</span></h1>
+    <div class="tag">2026 NMJL · multi-agent engine · EV-loss + game-type detector · <span id="pol"></span></div></header>
+  <div class="panel">
+    <h2>1 · Objective &amp; hand</h2>
+    <div class="controls" style="margin-bottom:8px">
+      <span class="muted">Game type:</span>
+      <span class="seg" id="obj"><button data-o="WINS" class="on">Wins only</button><button data-o="POINTS">Points</button></span>
+      <span class="prov">Wins = P(reach mahjong). Points = EV = P×value (illustrative values).</span>
+    </div>
+    <div id="palette"></div>
+    <h2 style="margin-top:14px">Your hand</h2>
+    <div class="hand" id="hand"></div>
+    <div class="controls">
+      <button id="go" disabled>Analyze</button><button class="ghost" id="deal">Deal random 13</button>
+      <button class="ghost" id="clear">Clear</button><span class="count">Tiles <b id="ct">0</b>/13</span>
+    </div>
+  </div>
+  <div class="panel"><h2>2 · Rating &amp; game-type sensitivity</h2><div id="rate"><div class="empty">Build or deal a hand, then Analyze.</div></div></div>
+  <div class="panel"><h2>3 · Charleston — pass ranking (EV-loss, CRN, dead-heat)</h2><div id="passes"><div class="empty">—</div></div></div>
+</div>
+<script>/*BUNDLE*/</script>
+<script>/*UI2*/</script>
+</body></html>
