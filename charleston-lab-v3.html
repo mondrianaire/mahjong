@@ -38,6 +38,11 @@
   th{font-size:9px;text-transform:uppercase;color:var(--muted)}
   .pill{font-size:9px;padding:1px 6px;border-radius:20px;background:#efe6d2;color:var(--muted)}.pill.best{background:var(--good);color:#fff}.pill.dead{background:#e8dfce}
   .prov{font-size:10.5px;color:var(--muted);margin-top:6px}.empty{color:var(--muted);font-size:13px}
+  .cardhands{margin-top:8px}
+  .cardhand{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px solid var(--line)}
+  .cardhand .hsec{font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:2px}
+  .cardhand .away{font-size:11px;color:var(--muted);white-space:nowrap}
+  .hand-notation{line-height:1.15}
 </style></head>
 <body><div class="wrap">
   <header class="top"><h1>Charleston Lab <span style="color:var(--accent)">v3</span> · Control Panel</h1>
@@ -60,6 +65,7 @@
   </div>
 </div>
 <script src="tilefaces.js"></script>
+<script src="handnotation.js"></script>
 <script>
 var __modules={}, __cache={};
 function require(name){ if(__cache[name]) return __cache[name].exports; var m={exports:{}}; __cache[name]=m; __modules[name](m, m.exports, require); return m.exports; }
@@ -1677,13 +1683,14 @@ window.Lab={ engine:require('./engine.js'), stats:require('./stats.js'), score:r
   function renderPortfolio(st) {
     const p = L.cal.predictP(st.ownRack);
     const sl = L.score.shortlist(st.ownRack, objective);
-    const seen = new Set(), lines = [];
-    for (const c of sl.cand) { const key = c.target.section + '|' + c.target.name; if (seen.has(key)) continue; seen.add(key); lines.push({ sec: c.target.section, nm: c.target.name.split(/\s+/)[0], d: c.d }); if (lines.length >= 5) break; }
+    const seen = new Set(), rows = [];
+    for (const c of sl.cand) { const key = c.target.section + '|' + c.target.name; if (seen.has(key)) continue; seen.add(key); const ln = E.CARD.find(x => x.section === c.target.section && x.name === c.target.name); if (ln) rows.push({ ln, d: c.d }); if (rows.length >= 5) break; }
     let h = '<div class="big" style="color:var(--good)">' + Math.round(100 * p) + '% <span class="muted" style="font-weight:400;font-size:12px">P(reach mahjong) — calibrated</span></div>';
     h += '<div class="prov">ECE ~2.5% on held-out self-play · policy ' + L.cal.policyVersion + '</div>';
-    h += '<table><tr><th>closest hands</th><th>away</th></tr>';
-    for (const l of lines) h += '<tr><td>' + l.sec + ' ' + l.nm + '</td><td>' + l.d + '</td></tr>';
-    h += '</table>';
+    h += '<div class="cap" style="font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-top:8px">Closest hands · color = suit group</div>';
+    h += '<div class="cardhands">';
+    for (const r of rows) h += '<div class="cardhand"><div>' + window.HandNotation.html(r.ln, { size: 16 }) + '<div class="hsec">' + window.HandNotation.label(r.ln.section) + '</div></div><span class="away">' + r.d + ' away</span></div>';
+    h += '</div>';
     document.getElementById('portfolio').innerHTML = h;
   }
 
