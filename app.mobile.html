@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#b8862a">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -14,49 +14,139 @@
     --bam:#2f7d44;--crak:#b83227;--dot:#2660a4;--soap:#6b6f76;--wind:#4a3f8f;--flower:#c2780a;--joker:#8a3ea0;
     --accent:#b8862a;--good:#2f7d44;--warn:#b8702a;--bad:#b83227;}
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-  html,body{margin:0}
-  body{background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-    line-height:1.45;padding:env(safe-area-inset-top) env(safe-area-inset-right) calc(env(safe-area-inset-bottom) + 12px) env(safe-area-inset-left)}
-  header{position:sticky;top:0;z-index:5;background:var(--bg);display:flex;align-items:center;justify-content:space-between;
-    gap:10px;padding:12px 16px 8px;border-bottom:1px solid var(--line)}
-  header h1{font-size:17px;margin:0}header h1 b{color:var(--accent)}
-  .stepbar{display:flex;gap:6px;align-items:center;padding:8px 16px;font-size:12px;color:var(--muted);overflow-x:auto;white-space:nowrap}
-  .dot{width:9px;height:9px;border-radius:50%;background:#dccfb4;display:inline-block}.dot.on{background:var(--accent)}
-  main{padding:12px 14px 0}
-  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px;box-shadow:0 1px 3px rgba(60,45,20,.1)}
-  .card h2{font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin:0 0 9px;font-weight:700;display:flex;justify-content:space-between}
-  .card h2 .z{color:var(--accent)}
-  button{font:inherit;font-weight:700;border:1px solid var(--accent);background:var(--accent);color:#fff;
-    padding:11px 16px;border-radius:10px;min-height:44px;cursor:pointer}
+  html,body{margin:0;height:100%}
+  body{background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.35;overflow:hidden}
+  .hidden{display:none!important}
+  button{font:inherit;font-weight:700;border:1px solid var(--accent);background:var(--accent);color:#fff;padding:7px 11px;border-radius:9px;cursor:pointer}
   button.ghost{background:#fff;color:var(--ink);border-color:var(--line)}
-  .dirbar{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:14px}.dirbar .nm{width:62px;font-weight:700}
-  .bar{height:11px;background:#e8dfce;border-radius:6px;flex:1;overflow:hidden}.bar span{display:block;height:100%;background:var(--accent)}
-  .big{font-size:34px;font-weight:800;line-height:1}.muted{color:var(--muted);font-size:12.5px}
-  .tiles{display:flex;flex-wrap:nowrap;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding:2px 0 8px}
-  .tile{display:inline-block;line-height:0;border-radius:9px;border:2px solid transparent;flex:0 0 auto}
-  .tile .mjt-svg{display:block;width:13vw;max-width:52px;height:auto;border-radius:7px}
+  button:disabled{opacity:.45}
+  .seg{display:inline-flex;border:1px solid var(--accent);border-radius:9px;overflow:hidden}
+  .seg button{border:0;border-radius:0;background:#fff;color:var(--ink);padding:6px 10px}.seg button.on{background:var(--accent);color:#fff}
+
+  /* rotate gate (portrait) */
+  #rotate{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;padding:30px;background:var(--bg);z-index:50}
+  #rotate .ic{font-size:46px}#rotate h1{margin:0;font-size:20px}#rotate h1 b{color:var(--accent)}#rotate p{margin:0;color:var(--muted);max-width:300px}
+  #app{display:none}
+  @media(orientation:landscape){#rotate{display:none}#app{display:flex;flex-direction:column;height:100dvh;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}}
+
+  /* header */
+  #bar{display:flex;align-items:center;gap:10px;padding:6px 12px;border-bottom:2px solid var(--accent);flex:0 0 auto}
+  #bar .brand{font-size:15px;font-weight:700}#bar .brand b{color:var(--accent)}
+  #bar .app-version{font-size:10px;color:var(--muted);font-weight:600;opacity:.7}
+  #bar .tempo{font-size:12px;color:var(--muted)}
+  #bar .actions{margin-left:auto;display:flex;gap:7px;align-items:center}
+
+  /* dashboard 3-pane */
+  #dash{flex:1 1 auto;min-height:0;display:grid;grid-template-columns:1.05fr 1.25fr 1.1fr;gap:8px;padding:8px 12px}
+  .pane{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:9px 11px;display:flex;flex-direction:column;min-height:0}
+  .pane h3{margin:0 0 7px;font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:700;flex:0 0 auto}
+  .scroll{overflow-y:auto;-webkit-overflow-scrolling:touch;min-height:0;flex:1}
+  .muted{color:var(--muted);font-size:12px}.empty{color:var(--muted);font-size:12px}
+
+  .dirbar{display:flex;align-items:center;gap:7px;margin-bottom:5px;font-size:12px}.dirbar .nm{width:58px;font-weight:700}
+  .bar{height:9px;background:#e8dfce;border-radius:5px;flex:1;overflow:hidden}.bar span{display:block;height:100%;background:var(--accent)}
+  .pbig{margin-top:auto;padding-top:8px}.pbig span{font-size:30px;font-weight:800;color:var(--good);line-height:1}.pbig small{display:block;color:var(--muted);font-size:11px}
+
+  .cardhand{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:5px 0;border-bottom:1px solid var(--line)}
+  .cardhand .hsec{font-size:8.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin-top:1px}
+  .cardhand .away{font-size:10.5px;color:var(--muted);white-space:nowrap}
+  .hand-notation{line-height:1.1}
+
+  .passslots{display:flex;gap:5px;margin-bottom:8px}
+  .slot{width:34px;height:45px;border:1.5px dashed var(--line);border-radius:7px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:18px}
+  .verdict{font-size:12px;margin:4px 0}.verdict b{font-weight:800}
+  .rec{font-size:11.5px;color:var(--muted);margin-top:6px}
+
+  /* rack */
+  #rackwrap{flex:0 0 auto;padding:4px 12px 8px}
+  .rackhead{display:flex;justify-content:space-between;font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+  .rack{display:flex;flex-wrap:nowrap;gap:5px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px}
+  .tile{position:relative;line-height:0;border-radius:9px;border:2px solid transparent;flex:0 0 auto;cursor:pointer}
+  .tile .mjt-svg{display:block;border-radius:7px}
   .tile.KEEP{border-color:var(--good)}.tile.PASS{border-color:var(--bad)}.tile.FLEX{border-color:var(--warn)}
-  .tile.sel{box-shadow:0 0 0 3px rgba(184,134,42,.45)}
-  table{width:100%;border-collapse:collapse;font-size:13px}td,th{text-align:left;padding:5px 4px;border-bottom:1px solid var(--line)}
-  th{font-size:9px;text-transform:uppercase;color:var(--muted)}
-  .prov{font-size:10.5px;color:var(--muted);margin-top:6px}.empty{color:var(--muted);font-size:13px;text-align:center;padding:18px 0}
-  #offline{font-size:11px;color:var(--good)}
+  .tile.sel{box-shadow:0 0 0 3px rgba(184,134,42,.5);transform:translateY(-4px)}
+  .tag{position:absolute;bottom:-1px;left:50%;transform:translateX(-50%);font-size:8px;font-weight:800;letter-spacing:.04em;padding:0 3px;border-radius:4px;background:#fff;color:var(--muted)}
+  .tag.KEEP{color:var(--good)}.tag.PASS{color:var(--bad)}.tag.FLEX{color:var(--warn)}
+
+  /* overlays */
+  .overlay{position:fixed;inset:0;background:rgba(36,31,26,.5);z-index:30;display:flex;align-items:center;justify-content:center;padding:14px}
+  .pad{background:var(--bg);border-radius:14px;padding:12px 14px;max-width:760px;width:100%;max-height:94dvh;overflow:auto}
+  .pad h2{margin:0 0 8px;font-size:15px}
+  .padrow{display:flex;align-items:center;gap:5px;margin-bottom:6px}.padrow .lab{width:42px;font-size:10px;color:var(--muted);text-transform:uppercase;flex:0 0 auto}
+  .padrow .tile{cursor:pointer}
+  .padfoot{display:flex;align-items:center;gap:10px;margin-top:8px}
+  .building{display:flex;flex-wrap:nowrap;gap:4px;overflow-x:auto;flex:1;min-height:50px;border:1px dashed var(--line);border-radius:8px;padding:5px}
+
+  .sheet{position:fixed;left:0;right:0;bottom:0;z-index:40;background:var(--panel);border-top:2px solid var(--accent);border-radius:16px 16px 0 0;padding:14px 18px calc(env(safe-area-inset-bottom) + 16px);box-shadow:0 -6px 20px rgba(60,45,20,.22)}
+  .sheet .sh-top{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+  .sheet .sh-act{font-size:11px;font-weight:800;padding:2px 8px;border-radius:6px;border:1px solid}
+  .sh-act.KEEP{color:var(--good);border-color:var(--good)}.sh-act.PASS{color:var(--bad);border-color:var(--bad)}.sh-act.FLEX{color:var(--warn);border-color:var(--warn)}
+  .sheet .row2{font-size:12.5px;margin:3px 0}.sheet .k{color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.04em}
+  .sheet .close{position:absolute;top:10px;right:14px;background:none;border:0;color:var(--muted);font-size:20px;padding:4px}
+  .spin{font-size:12px;color:var(--muted)}
 </style>
 </head>
 <body>
-  <header>
-    <h1>Charleston <b>Lab</b> <span class="app-version" style="font-size:11px;color:var(--muted);font-weight:600;opacity:.7" title="version"></span></h1>
-    <div style="display:flex;gap:8px;align-items:center">
-      <span id="offline"></span>
-      <button id="deal">Deal a hand</button>
+  <div id="rotate">
+    <div class="ic">⟳</div>
+    <h1>Charleston <b>Lab</b></h1>
+    <p>Rotate your device to landscape to use the study dashboard.</p>
+  </div>
+
+  <div id="app">
+    <header id="bar">
+      <span class="brand">Charleston <b>Lab</b> <span class="app-version" title="version"></span></span>
+      <span class="tempo" id="tempo"></span>
+      <span class="actions">
+        <span class="seg" id="obj"><button data-o="WINS" class="on">Wins</button><button data-o="POINTS">Points</button></span>
+        <button id="deal">Deal</button>
+        <button id="build" class="ghost">Build</button>
+      </span>
+    </header>
+
+    <div id="dash">
+      <section class="pane">
+        <h3>Direction</h3>
+        <div id="dir" class="scroll"><div class="empty">Deal or build a hand to begin.</div></div>
+        <div class="pbig"><span id="pwin">—</span><small id="pwinsub">P(reach mahjong)</small></div>
+      </section>
+      <section class="pane">
+        <h3>Closest hands · color = suit group</h3>
+        <div id="hands" class="scroll"><div class="empty">—</div></div>
+      </section>
+      <section class="pane">
+        <h3>Your pass — tap 3 in the rack</h3>
+        <div id="builder" class="scroll"><div class="empty">—</div></div>
+      </section>
     </div>
-  </header>
-  <div class="stepbar" id="stepbar"><span class="dot on"></span> Practice · analyze a starting hand</div>
-  <main id="cards">
-    <div class="card"><div class="empty">Tap <b>Deal a hand</b> to study a starting rack — works fully offline.</div></div>
-  </main>
+
+    <div id="rackwrap">
+      <div class="rackhead"><span>Your rack — tap for why · tap-select 3 to build a pass</span><span id="rackcount"></span></div>
+      <div id="rack" class="rack"><div class="empty">No hand yet.</div></div>
+    </div>
+  </div>
+
+  <div id="keypad" class="overlay hidden">
+    <div class="pad">
+      <h2>Build a hand <span class="muted" id="buildcount" style="font-weight:400"></span></h2>
+      <div id="padrows"></div>
+      <div class="muted" style="margin:6px 0 4px;font-size:10px;text-transform:uppercase;letter-spacing:.05em">Building</div>
+      <div class="building" id="building"></div>
+      <div class="padfoot">
+        <button id="padUndo" class="ghost">Undo</button>
+        <button id="padClear" class="ghost">Clear</button>
+        <span class="muted" id="padHint" style="margin-left:auto"></span>
+        <button id="padDone">Analyze</button>
+        <button id="padCancel" class="ghost">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="sheet" class="sheet hidden"></div>
+
   <script src="./dist/charleston-engine.global.js"></script>
   <script src="./tilefaces.js"></script>
+  <script src="./handnotation.js"></script>
   <script src="./version.js"></script>
   <script src="./app.js"></script>
 </body>

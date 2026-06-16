@@ -4,12 +4,13 @@
 /* Cache name is tied to the app VERSION below — bump it on every code change so
  * returning devices discard the stale cache and re-fetch the shell. Keep VERSION
  * in sync with version.js / package.json. */
-const VERSION = '1.0.3';
+const VERSION = '1.0.4';
 const CACHE = 'charleston-lab-' + VERSION;
 const SHELL = [
   './app.mobile.html',
   './app.js',
   './tilefaces.js',
+  './handnotation.js',
   './version.js',
   './dist/charleston-engine.global.js',
   './manifest.webmanifest',
