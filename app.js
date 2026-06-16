@@ -198,16 +198,35 @@
     el('buildcount').textContent = '· ' + building.length + '/13'; el('padHint').textContent = building.length === 13 ? 'Ready' : (13 - building.length) + ' to go'; el('padDone').disabled = building.length !== 13;
   }
 
-  // ---------- real 2026 card (password-locked) ----------
-  var realCard = false;
-  function setCardStat() { var e = el('cardstat'); if (e) e.textContent = realCard ? '2026 ✓' : 'illustrative'; }
+  // ---------- real 2026 card (password-locked) + 3-column card view ----------
+  var realCard = false, cardPayload = null;
+  var CARDCOL = { green: '#2f7d44', red: '#b83227', blue: '#2660a4', black: '#5f5e5a' };
+  function setCardStat() { var e = el('cardstat'); if (e) e.textContent = realCard ? '2026 ✓' : 'illustrative'; var b = el('loadcard'); if (b) b.textContent = realCard ? 'View card' : '2026 card'; }
   function rerenderCurrent() { if (sess) syncSession(); else if (rack) { renderReads(); reRenderAction(); } }
   function doLoadCard() {
     var pw = el('cardpw').value; if (!pw) return; el('carderr').textContent = 'unlocking…';
     fetch('./card-2026.enc.json').then(function (r) { return r.json(); }).then(function (blob) { return window.CardCrypto.decrypt(blob, pw); })
-      .then(function (txt) { var targets = window.CardInterp.expandCard(JSON.parse(txt)); E.engine.setTargets(targets); realCard = true; el('cardpad').classList.add('hidden'); setCardStat(); rerenderCurrent(); })
+      .then(function (txt) { cardPayload = JSON.parse(txt); var targets = window.CardInterp.expandCard(cardPayload); E.engine.setTargets(targets); realCard = true; el('carderr').textContent = ''; el('cardpad').classList.add('hidden'); setCardStat(); rerenderCurrent(); openCardView(); })
       .catch(function () { el('carderr').textContent = 'Wrong password or card failed to load.'; });
   }
+  function noteHTML(alt) { return '<span class="note">' + alt.map(function (g) { return '<span style="color:' + (CARDCOL[g.color] || '#5f5e5a') + ';font-weight:700">' + g.tiles + '</span>'; }).join(' ') + '</span>'; }
+  function renderCardView() {
+    if (!cardPayload) return; var bySec = {}; cardPayload.hands.forEach(function (h) { (bySec[h.s] = bySec[h.s] || []).push(h); });
+    var cols = (cardPayload.layout && cardPayload.layout.columns) || []; var html = '';
+    cols.forEach(function (col) {
+      html += '<div class="cardcol">';
+      col.sections.forEach(function (sec) {
+        html += '<div class="cardsec"><div class="cardsecname"><span>' + sec + '</span><span>Val</span></div>';
+        (bySec[sec] || []).forEach(function (h) {
+          html += '<div class="cardhandrow">' + h.A.map(noteHTML).join('<span class="orsep"> — or — </span>') + '<span class="cardval">' + h.v + ' ' + (h.c ? 'C' : 'X') + '</span></div>';
+        });
+        html += '</div>';
+      });
+      html += '</div>';
+    });
+    el('cardcols').innerHTML = html;
+  }
+  function openCardView() { renderCardView(); el('cardview').classList.remove('hidden'); }
 
   // ---------- wire ----------
   function wire() {
@@ -219,7 +238,8 @@
     el('padClear').addEventListener('click', function () { building = []; renderBuilding(poolMax()); });
     el('padDone').addEventListener('click', function () { if (building.length === 13) { el('keypad').classList.add('hidden'); analyze(building.slice()); } });
     document.querySelectorAll('#obj button').forEach(function (b) { b.addEventListener('click', function () { objective = b.dataset.o; document.querySelectorAll('#obj button').forEach(function (x) { x.classList.toggle('on', x === b); }); el('pwinsub').textContent = objective === 'POINTS' ? 'EV (illustrative)' : 'P(reach mahjong)'; if (rack) { renderReads(); reRenderAction(); } }); });
-    el('loadcard').addEventListener('click', function () { el('carderr').textContent = ''; el('cardpw').value = ''; el('cardpad').classList.remove('hidden'); el('cardpw').focus(); });
+    el('loadcard').addEventListener('click', function () { if (realCard) { openCardView(); return; } el('carderr').textContent = ''; el('cardpw').value = ''; el('cardpad').classList.remove('hidden'); el('cardpw').focus(); });
+    el('cvclose').addEventListener('click', function () { el('cardview').classList.add('hidden'); });
     el('cardcancel').addEventListener('click', function () { el('cardpad').classList.add('hidden'); });
     el('cardgo').addEventListener('click', doLoadCard);
     el('cardpw').addEventListener('keydown', function (ev) { if (ev.key === 'Enter') doLoadCard(); });

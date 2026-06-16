@@ -94,6 +94,16 @@
   .stepbar{display:flex;gap:5px;align-items:center}.stepdot{width:8px;height:8px;border-radius:50%;background:#dccfb4}.stepdot.on{background:var(--accent)}.stepdot.cur{background:var(--accent);box-shadow:0 0 0 3px rgba(184,134,42,.3)}
   .actbtns{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
   .summ{font-size:13px}.summ .v{font-size:22px;font-weight:800}
+  #cardview .cardbig{background:var(--bg);border-radius:14px;width:100%;max-width:1100px;max-height:94dvh;display:flex;flex-direction:column;padding:10px 12px}
+  .cardhdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}.cardhdr b{color:var(--accent);font-size:15px}
+  .cardcols{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;overflow-y:auto;-webkit-overflow-scrolling:touch}
+  .cardcol{display:flex;flex-direction:column;gap:8px;min-width:0}
+  .cardsec{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:7px 9px}
+  .cardsecname{font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin-bottom:5px;border-bottom:1px solid var(--line);padding-bottom:3px;display:flex;justify-content:space-between}
+  .cardsecname span{color:var(--muted);font-weight:600}
+  .cardhandrow{font-size:12px;line-height:1.45;padding:3px 0;border-bottom:1px solid #efe7d6;display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+  .cardhandrow .note{letter-spacing:.4px;font-variant-numeric:tabular-nums}
+  .cardval{font-size:9px;color:var(--muted);white-space:nowrap}.orsep{font-size:8px;color:var(--muted)}
 </style>
 </head>
 <body>
@@ -166,6 +176,12 @@
       <input id="cardpw" type="password" autocomplete="off" style="width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;font-size:15px;background:#fff" placeholder="password">
       <div id="carderr" style="color:var(--bad);font-size:11px;margin-top:6px"></div>
       <div class="padfoot"><button id="cardgo">Unlock</button><button id="cardcancel" class="ghost">Cancel</button></div>
+    </div>
+  </div>
+  <div id="cardview" class="overlay hidden">
+    <div class="cardbig">
+      <div class="cardhdr"><b>NMJL 2026 — your card</b><span class="muted" style="font-size:10px;flex:1;margin-left:10px">color = suit group · X exposed · C concealed · white dragon = 0</span><button id="cvclose" class="ghost">Close</button></div>
+      <div class="cardcols" id="cardcols"></div>
     </div>
   </div>
   <script src="./dist/charleston-engine.global.js"></script>
