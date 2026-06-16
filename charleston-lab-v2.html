@@ -13,16 +13,10 @@
   header.top h1{font-size:21px;margin:0}header.top .tag{color:var(--muted);font-size:12.5px}
   .panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;box-shadow:var(--shadow);margin-bottom:18px}
   h2{font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin:0 0 10px;font-weight:700}
-  .tile{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;width:42px;height:54px;
-    border-radius:8px;background:#fff;border:1px solid #d8cdb8;cursor:pointer;user-select:none;position:relative}
-  .tile .num{font-size:21px;font-weight:800;line-height:1}.tile .suit{font-size:8px;text-transform:uppercase;color:var(--muted);margin-top:2px}
-  .tile.sm{width:34px;height:44px}.tile.sm .num{font-size:17px}
-  .tile.bam .num{color:var(--bam)}.tile.crak .num{color:var(--crak)}.tile.dot .num{color:var(--dot)}
-  .tile.wind .num{color:var(--wind);font-size:17px}.tile.dragon .num{font-size:12px}.tile.dragon.g .num{color:var(--bam)}
-  .tile.dragon.r .num{color:var(--crak)}.tile.dragon.w .num{color:var(--soap)}.tile.flower .num{color:var(--flower);font-size:16px}
-  .tile.joker .num{color:var(--joker);font-size:12px}
-  .row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;align-items:center}.row .lab{width:54px;font-size:11px;color:var(--muted)}
-  .hand{min-height:64px;display:flex;flex-wrap:wrap;gap:6px;padding:10px;border:1px dashed var(--line);border-radius:10px;background:#fbf7ee;margin:6px 0}
+  .tile{display:inline-block;line-height:0;border-radius:8px;border:2px solid transparent;cursor:pointer;user-select:none;position:relative}
+  .tile .mjt-svg{display:block;border-radius:6px}
+  .row{display:flex;flex-wrap:nowrap;overflow-x:auto;gap:6px;margin-bottom:8px;align-items:center}.row .lab{width:54px;font-size:11px;color:var(--muted);flex:0 0 auto}
+  .hand{min-height:64px;display:flex;flex-wrap:nowrap;overflow-x:auto;gap:6px;padding:10px;border:1px dashed var(--line);border-radius:10px;background:#fbf7ee;margin:6px 0}
   button{font:inherit;font-weight:600;border:1px solid var(--accent);background:var(--accent);color:#fff;padding:8px 15px;border-radius:8px;cursor:pointer}
   button.ghost{background:#fff;color:var(--ink);border-color:var(--line)}button:disabled{opacity:.45;cursor:not-allowed}
   .seg{display:inline-flex;border:1px solid var(--accent);border-radius:8px;overflow:hidden}
@@ -41,8 +35,11 @@
   .big{font-size:30px;font-weight:800}.muted{color:var(--muted);font-size:12.5px}
   .prov{font-size:11px;color:var(--muted)}.empty{color:var(--muted);font-size:13px}
 </style></head>
-<body><div class="wrap">
-  <header class="top"><h1>Charleston Lab <span style="color:var(--accent)">v2</span></h1>
+<body>
+<script src="tilefaces.js"></script>
+<script src="version.js"></script>
+<div class="wrap">
+  <header class="top"><h1>Charleston Lab <span style="color:var(--accent)">v2</span> <span class="app-version" style="font-size:12px;color:var(--muted);font-weight:600;opacity:.7" title="version"></span></h1>
     <div class="tag">2026 NMJL · multi-agent engine · EV-loss + game-type detector · <span id="pol"></span></div></header>
   <div class="panel">
     <h2>1 · Objective &amp; hand</h2>
@@ -1040,8 +1037,8 @@ window.Lab = { engine: require('./engine.js'), stats: require('./stats.js'), met
     return { cls: { B: 'bam', C: 'crak', D: 'dot' }[c[1]], num: c[0], suit: { B: 'Bam', C: 'Crak', D: 'Dot' }[c[1]] };
   }
   function tile(c, sm, on) {
-    const m = meta(c), d = document.createElement('div');
-    d.className = 'tile ' + m.cls + (sm ? ' sm' : ''); d.innerHTML = '<span class="num">' + m.num + '</span><span class="suit">' + m.suit + '</span>';
+    const d = document.createElement('div');
+    d.className = 'tile' + (sm ? ' sm' : ''); d.title = window.TileFaces.label(c); d.innerHTML = window.TileFaces.svg(c, { w: sm ? 36 : 46 });
     if (on) d.addEventListener('click', on); return d;
   }
   const CAP = c => (c === 'JK' ? 8 : c === 'FL' ? 8 : 4);
