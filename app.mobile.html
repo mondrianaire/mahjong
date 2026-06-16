@@ -112,6 +112,8 @@
         <button id="practice">Practice</button>
         <button id="deal" class="ghost">Analyze</button>
         <button id="build" class="ghost">Build</button>
+        <button id="loadcard" class="ghost">2026 card</button>
+        <span id="cardstat" class="muted" style="font-size:10px"></span>
       </span>
     </header>
 
@@ -157,9 +159,20 @@
 
   <div id="sheet" class="sheet hidden"></div>
 
+  <div id="cardpad" class="overlay hidden">
+    <div class="pad" style="max-width:380px">
+      <h2>Unlock the 2026 card</h2>
+      <div class="muted" style="margin-bottom:8px">Enter the group password to load the real NMJL 2026 hands. Until unlocked, the app uses an illustrative set.</div>
+      <input id="cardpw" type="password" autocomplete="off" style="width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;font-size:15px;background:#fff" placeholder="password">
+      <div id="carderr" style="color:var(--bad);font-size:11px;margin-top:6px"></div>
+      <div class="padfoot"><button id="cardgo">Unlock</button><button id="cardcancel" class="ghost">Cancel</button></div>
+    </div>
+  </div>
   <script src="./dist/charleston-engine.global.js"></script>
   <script src="./tilefaces.js"></script>
   <script src="./handnotation.js"></script>
+  <script src="./cardcrypto.js"></script>
+  <script src="./cardinterp.js"></script>
   <script src="./version.js"></script>
   <script src="./app.js"></script>
 </body>

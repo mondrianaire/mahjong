@@ -41,9 +41,10 @@ function keepValue(tiles, objective) {
 
 // performance: pre-order target groups (non-jokerable first) ONCE so the hot loop
 // never re-sorts. fastNeeded mirrors engine coverage without the per-call sort.
-let _ordered = null;
+let _ordered = null, _ver = -1;
 function orderedTargets() {
-  if (_ordered) return _ordered;
+  if (_ordered && _ver === E.targetsVersion()) return _ordered;
+  _ver = E.targetsVersion();
   _ordered = E.buildTargets().map(t => ({
     section: t.section, name: t.name,
     groups: t.groups.slice().sort((a, b) => (a.jokerable ? 1 : 0) - (b.jokerable ? 1 : 0)),

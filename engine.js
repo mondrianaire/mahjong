@@ -374,13 +374,22 @@
       num(2,2,1), soap(1), num(2,2,1), num(6,2,1)]) });
 
   // ---- build flat target list ------------------------------------------
-  let TARGETS = null;
+  let TARGETS = null, TVER = 0;
   function buildTargets() {
     if (TARGETS) return TARGETS;
     TARGETS = [];
     for (const line of CARD) for (const t of expandLine(line)) TARGETS.push(t);
     return TARGETS;
   }
+  // Inject an external, pre-expanded target set (e.g. the decrypted real card),
+  // each target { section, name, groups:[{tile,count,jokerable}] } summing to 14.
+  // No card data lives here — this only swaps in whatever the caller provides.
+  function setTargets(arr) {
+    for (const t of arr) { const s = t.groups.reduce((a, g) => a + g.count, 0); if (s !== 14) throw new Error('external target ' + t.name + ' sums to ' + s); }
+    TARGETS = arr; TVER++;
+  }
+  function resetTargets() { TARGETS = null; TVER++; }   // back to the built-in card
+  function targetsVersion() { return TVER; }
 
   // ======================================================================
   //  METRICS + RATING
@@ -601,7 +610,7 @@
 
   const API = {
     SUITS, DRAGON_OF, fullPool, CARD, CALIB,
-    expandLine, buildTargets, coverage, handPool, tilesNeeded,
+    expandLine, buildTargets, setTargets, resetTargets, targetsVersion, coverage, handPool, tilesNeeded,
     reachMassOver, analyzeStatic, metrics, monteCarlo,
     charlestonSuggest, charlestonOptimize,
   };

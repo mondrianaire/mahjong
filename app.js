@@ -198,6 +198,17 @@
     el('buildcount').textContent = '· ' + building.length + '/13'; el('padHint').textContent = building.length === 13 ? 'Ready' : (13 - building.length) + ' to go'; el('padDone').disabled = building.length !== 13;
   }
 
+  // ---------- real 2026 card (password-locked) ----------
+  var realCard = false;
+  function setCardStat() { var e = el('cardstat'); if (e) e.textContent = realCard ? '2026 ✓' : 'illustrative'; }
+  function rerenderCurrent() { if (sess) syncSession(); else if (rack) { renderReads(); reRenderAction(); } }
+  function doLoadCard() {
+    var pw = el('cardpw').value; if (!pw) return; el('carderr').textContent = 'unlocking…';
+    fetch('./card-2026.enc.json').then(function (r) { return r.json(); }).then(function (blob) { return window.CardCrypto.decrypt(blob, pw); })
+      .then(function (txt) { var targets = window.CardInterp.expandCard(JSON.parse(txt)); E.setTargets(targets); realCard = true; el('cardpad').classList.add('hidden'); setCardStat(); rerenderCurrent(); })
+      .catch(function () { el('carderr').textContent = 'Wrong password or card failed to load.'; });
+  }
+
   // ---------- wire ----------
   function wire() {
     el('practice').addEventListener('click', startPractice);
@@ -208,6 +219,11 @@
     el('padClear').addEventListener('click', function () { building = []; renderBuilding(poolMax()); });
     el('padDone').addEventListener('click', function () { if (building.length === 13) { el('keypad').classList.add('hidden'); analyze(building.slice()); } });
     document.querySelectorAll('#obj button').forEach(function (b) { b.addEventListener('click', function () { objective = b.dataset.o; document.querySelectorAll('#obj button').forEach(function (x) { x.classList.toggle('on', x === b); }); el('pwinsub').textContent = objective === 'POINTS' ? 'EV (illustrative)' : 'P(reach mahjong)'; if (rack) { renderReads(); reRenderAction(); } }); });
+    el('loadcard').addEventListener('click', function () { el('carderr').textContent = ''; el('cardpw').value = ''; el('cardpad').classList.remove('hidden'); el('cardpw').focus(); });
+    el('cardcancel').addEventListener('click', function () { el('cardpad').classList.add('hidden'); });
+    el('cardgo').addEventListener('click', doLoadCard);
+    el('cardpw').addEventListener('keydown', function (ev) { if (ev.key === 'Enter') doLoadCard(); });
+    setCardStat();
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', wire); else wire();
   window.__app = { analyze: analyze, deal13: deal13, startPractice: startPractice, sess: function () { return sess; } };
