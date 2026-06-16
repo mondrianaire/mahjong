@@ -48,6 +48,10 @@
   .popstat{background:#fbf7ee;border:1px solid var(--line);border-radius:8px;padding:7px 9px}
   .popstat .v{font-size:17px;font-weight:800;line-height:1.1}.popstat .k{font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-top:2px}
   .popchart{width:100%;height:220px;background:#fbf7ee;border:1px solid var(--line);border-radius:8px;display:block;margin-bottom:6px}
+  .popbar{height:8px;background:#e8dfce;border-radius:5px;overflow:hidden;margin-bottom:12px}
+  .popbar-fill{height:100%;width:0;background:var(--accent)}
+  .popbest{margin-top:6px;border-top:1px solid var(--line);padding-top:10px}
+  .popbest .rack{display:flex;flex-wrap:nowrap;overflow-x:auto;gap:5px;margin:6px 0}
 </style></head>
 <body><div class="wrap">
   <header class="top"><h1>Charleston Lab <span style="color:var(--accent)">v3</span> · Control Panel <span class="app-version" style="font-size:12px;color:var(--muted);font-weight:600;opacity:.7" title="version"></span></h1>
@@ -72,14 +76,17 @@
     <h2>Population Analysis — random-hand P(win) distribution <span class="z">Stats</span></h2>
     <div class="poprow">
       <span class="muted">Sample size:</span>
-      <span class="seg" id="popN"><button data-n="1000">1,000</button><button data-n="5000" class="on">5,000</button><button data-n="10000">10,000</button></span>
+      <span class="seg" id="popN"><button data-n="1000">1,000</button><button data-n="5000" class="on">5,000</button><button data-n="10000">10,000</button><button data-n="100000">100,000</button></span>
       <button id="popRun">Run</button>
       <button id="popStop" class="ghost" disabled>Stop</button>
+      <button id="popReset" class="ghost">Reset</button>
       <span class="muted" id="popProg"></span>
     </div>
+    <div class="popbar"><div class="popbar-fill" id="popBarFill"></div></div>
     <div id="popStats" class="popstats"></div>
     <svg id="popChart" class="popchart" viewBox="0 0 600 220" preserveAspectRatio="none" role="img" aria-label="P(win) distribution histogram"></svg>
-    <div class="prov">Completely random 13-tile deals scored by the calibrated predictor (policy <span id="popPol"></span>). Histogram = distribution of P(reach mahjong) in 2% buckets; updates live as samples accumulate.</div>
+    <div id="popBest"></div>
+    <div class="prov">Completely random 13-tile deals scored by the calibrated predictor (policy <span id="popPol"></span>). Histogram = distribution of P(reach mahjong) in 2% buckets, live. Re-running Run keeps accumulating into the same sample (same policy); use Reset to start over.</div>
   </div>
 </div>
 <script src="tilefaces.js"></script>
@@ -1811,8 +1818,12 @@ window.Lab={ engine:require('./engine.js'), stats:require('./stats.js'), score:r
 
   // ---- Population analysis: calibrated P over many COMPLETELY random hands ----
   const POP_BINS = 50; // 2% buckets over [0,1]
-  const popState = { running: false, cancel: false, vals: [], bins: null };
-  function popReset() { popState.vals = []; popState.bins = new Array(POP_BINS).fill(0); }
+  const popState = { running: false, cancel: false, vals: [], bins: null, sig: null, best: null };
+  function popReset() { popState.vals = []; popState.bins = new Array(POP_BINS).fill(0); popState.best = null; }
+  function popTileOrd(a, b) {
+    const ord = c => c === 'JK' ? 990 : c === 'FL' ? 980 : c === 'DW' ? 970 : (c === 'DG' || c === 'DR') ? 960 : c[0] === 'W' ? 950 : ({ B: 0, C: 100, D: 200 }[c[1]] || 900) + (+c[0] || 0);
+    return ord(a) - ord(b);
+  }
   function popStats() {
     const v = popState.vals, n = v.length; if (!n) return null;
     let min = Infinity, max = -Infinity, sum = 0;
@@ -1844,21 +1855,55 @@ window.Lab={ engine:require('./engine.js'), stats:require('./stats.js'), score:r
         '<text x="' + x + '" y="' + (H - 6) + '" font-size="10" fill="var(--muted)" text-anchor="middle">' + (t * 100) + '%</text>'; });
     svg.innerHTML = bars + '<line x1="' + padL + '" y1="' + (H - padB) + '" x2="' + (W - padR) + '" y2="' + (H - padB) + '" stroke="var(--line)"/>' + ticks;
   }
+  function popClosest(rack, k) {
+    const sl = L.score.shortlist(rack, objective), seen = new Set(), rows = [];
+    for (const c of sl.cand) { const key = c.target.section + '|' + c.target.name; if (seen.has(key)) continue; seen.add(key); const ln = E.CARD.find(x => x.section === c.target.section && x.name === c.target.name); if (ln) rows.push({ ln, d: c.d }); if (rows.length >= (k || 5)) break; }
+    return rows;
+  }
+  function popRenderBest() {
+    const el = document.getElementById('popBest'); if (!el) return; const b = popState.best;
+    if (!b) { el.innerHTML = ''; return; }
+    const m = E.metrics(b.rack), jk = b.rack.filter(t => t === 'JK').length;
+    const rackHTML = b.rack.slice().sort(popTileOrd).map(c => window.TileFaces.svg(c, { w: 34 })).join('');
+    const cap = t => '<div style="font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)">' + t + '</div>';
+    let ch = '<div class="cardhands">';
+    for (const r of popClosest(b.rack, 5)) ch += '<div class="cardhand"><div>' + window.HandNotation.html(r.ln, { size: 15 }) + '<div class="hsec">' + window.HandNotation.label(r.ln.section) + '</div></div><span class="away">' + r.d + ' away</span></div>';
+    ch += '</div>';
+    el.innerHTML = '<div class="popbest">' + cap('Best hand found · highest P(win)') +
+      '<div class="rack">' + rackHTML + '</div>' +
+      '<div class="popstats">' +
+      '<div class="popstat"><div class="v" style="color:var(--good)">' + (100 * b.p).toFixed(1) + '%</div><div class="k">P(win)</div></div>' +
+      '<div class="popstat"><div class="v">' + m.distance + '</div><div class="k">tiles away</div></div>' +
+      '<div class="popstat"><div class="v">' + jk + '</div><div class="k">jokers</div></div>' +
+      '<div class="popstat"><div class="v">' + m.pairs + '</div><div class="k">pairs</div></div>' +
+      '<div class="popstat"><div class="v">' + m.pungs + '</div><div class="k">pungs</div></div>' +
+      '</div>' + cap('Closest hands · color = suit group') + ch + '</div>';
+  }
+  function popRenderAll() { popRenderStats(); popRenderChart(); popRenderBest(); }
   function popSetRunning(on) {
     popState.running = on;
     document.getElementById('popRun').disabled = on; document.getElementById('popStop').disabled = !on;
+    document.getElementById('popReset').disabled = on;
     document.querySelectorAll('#popN button').forEach(b => b.disabled = on);
   }
   function runPopulation(N) {
-    popReset(); popSetRunning(true); popState.cancel = false; let done = 0; const batch = 200;
-    const prog = document.getElementById('popProg');
+    const sig = L.cal.policyVersion;                       // the only "starting condition" for random hands
+    if (popState.sig !== sig) { popReset(); popState.sig = sig; }   // changed → fresh; else accumulate
+    popSetRunning(true); popState.cancel = false; let done = 0, ticks = 0; const batch = 250;
+    const prog = document.getElementById('popProg'), bar = document.getElementById('popBarFill');
     const tick = () => {
-      if (popState.cancel) { popSetRunning(false); prog.textContent = 'stopped at ' + done.toLocaleString(); popRenderStats(); popRenderChart(); return; }
+      if (popState.cancel) { popSetRunning(false); prog.textContent = 'stopped · total ' + popState.vals.length.toLocaleString(); popRenderAll(); return; }
       const end = Math.min(N, done + batch);
-      for (; done < end; done++) { const p = L.cal.predictP(deal13()); popState.vals.push(p); let bi = Math.floor(p * POP_BINS); if (bi >= POP_BINS) bi = POP_BINS - 1; if (bi < 0) bi = 0; popState.bins[bi]++; }
-      prog.textContent = done.toLocaleString() + ' / ' + N.toLocaleString();
-      popRenderStats(); popRenderChart();
-      if (done < N) setTimeout(tick, 0); else { popSetRunning(false); prog.textContent = 'done · ' + N.toLocaleString() + ' random hands'; }
+      for (; done < end; done++) {
+        const rack = deal13(), p = L.cal.predictP(rack);
+        popState.vals.push(p); let bi = Math.floor(p * POP_BINS); if (bi >= POP_BINS) bi = POP_BINS - 1; if (bi < 0) bi = 0; popState.bins[bi]++;
+        if (!popState.best || p > popState.best.p) popState.best = { p, rack: rack.slice() };
+      }
+      ticks++;
+      bar.style.width = (100 * done / N).toFixed(1) + '%';
+      prog.textContent = done.toLocaleString() + ' / ' + N.toLocaleString() + ' · total ' + popState.vals.length.toLocaleString();
+      if (ticks % 4 === 0) popRenderAll();                 // throttle the heavy (sort/shortlist) render
+      if (done < N) setTimeout(tick, 0); else { popSetRunning(false); bar.style.width = '100%'; prog.textContent = 'done · total ' + popState.vals.length.toLocaleString() + ' random hands'; popRenderAll(); }
     };
     setTimeout(tick, 0);
   }
@@ -1867,7 +1912,8 @@ window.Lab={ engine:require('./engine.js'), stats:require('./stats.js'), score:r
     document.querySelectorAll('#popN button').forEach(b => b.addEventListener('click', () => document.querySelectorAll('#popN button').forEach(x => x.classList.toggle('on', x === b))));
     document.getElementById('popRun').addEventListener('click', () => { const sel = document.querySelector('#popN button.on'); runPopulation(sel ? +sel.dataset.n : 5000); });
     document.getElementById('popStop').addEventListener('click', () => { popState.cancel = true; });
-    popRenderStats();
+    document.getElementById('popReset').addEventListener('click', () => { popReset(); popState.sig = null; document.getElementById('popBarFill').style.width = '0'; document.getElementById('popProg').textContent = ''; popRenderAll(); });
+    popRenderAll();
   }
 
   function wire() {
