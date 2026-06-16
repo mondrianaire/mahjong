@@ -32,13 +32,11 @@
   .dirbar{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:14px}.dirbar .nm{width:62px;font-weight:700}
   .bar{height:11px;background:#e8dfce;border-radius:6px;flex:1;overflow:hidden}.bar span{display:block;height:100%;background:var(--accent)}
   .big{font-size:34px;font-weight:800;line-height:1}.muted{color:var(--muted);font-size:12.5px}
-  .tiles{display:flex;flex-wrap:wrap;gap:7px}
-  .tile{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;width:13vw;max-width:52px;height:18vw;max-height:66px;
-    border-radius:9px;background:#fff;border:2px solid #d8cdb8}
-  .tile .num{font-size:5.2vw;max-font-size:22px;font-weight:800;line-height:1}.tile .suit{font-size:8px;text-transform:uppercase;color:var(--muted);margin-top:2px}
-  .tile.bam .num{color:var(--bam)}.tile.crak .num{color:var(--crak)}.tile.dot .num{color:var(--dot)}.tile.wind .num{color:var(--wind)}
-  .tile.dragon .num{font-size:3.2vw}.tile.dragon.g .num{color:var(--bam)}.tile.dragon.r .num{color:var(--crak)}.tile.dragon.w .num{color:var(--soap)}
-  .tile.flower .num{color:var(--flower)}.tile.joker .num{color:var(--joker);font-size:3.2vw}
+  .tiles{display:flex;flex-wrap:nowrap;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding:2px 0 8px}
+  .tile{display:inline-block;line-height:0;border-radius:9px;border:2px solid transparent;flex:0 0 auto}
+  .tile .mjt-svg{display:block;width:13vw;max-width:52px;height:auto;border-radius:7px}
+  .tile.KEEP{border-color:var(--good)}.tile.PASS{border-color:var(--bad)}.tile.FLEX{border-color:var(--warn)}
+  .tile.sel{box-shadow:0 0 0 3px rgba(184,134,42,.45)}
   table{width:100%;border-collapse:collapse;font-size:13px}td,th{text-align:left;padding:5px 4px;border-bottom:1px solid var(--line)}
   th{font-size:9px;text-transform:uppercase;color:var(--muted)}
   .prov{font-size:10.5px;color:var(--muted);margin-top:6px}.empty{color:var(--muted);font-size:13px;text-align:center;padding:18px 0}
@@ -58,6 +56,7 @@
     <div class="card"><div class="empty">Tap <b>Deal a hand</b> to study a starting rack — works fully offline.</div></div>
   </main>
   <script src="./dist/charleston-engine.global.js"></script>
+  <script src="./tilefaces.js"></script>
   <script src="./app.js"></script>
 </body>
 </html>

@@ -27,7 +27,7 @@
     if (c[0] === 'W') return { cls: 'wind', num: c[1], suit: 'wind' };
     return { cls: { B: 'bam', C: 'crak', D: 'dot' }[c[1]], num: c[0], suit: { B: 'Bam', C: 'Crak', D: 'Dot' }[c[1]] };
   }
-  function tileHTML(c) { var m = meta(c); return '<div class="tile ' + m.cls + '"><span class="num">' + m.num + '</span><span class="suit">' + m.suit + '</span></div>'; }
+  function tileHTML(c, cls) { return '<div class="tile' + (cls ? ' ' + cls : '') + '" title="' + window.TileFaces.label(c) + '">' + window.TileFaces.svg(c, { w: 48 }) + '</div>'; }
 
   function deal13() {
     var pool = []; var fp = E.fullPool();

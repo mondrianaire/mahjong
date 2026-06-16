@@ -17,15 +17,11 @@
   button.ghost{background:#fff;color:var(--ink);border-color:var(--line)}button:disabled{opacity:.45;cursor:not-allowed}
   .seg{display:inline-flex;border:1px solid var(--accent);border-radius:8px;overflow:hidden}
   .seg button{border:0;border-radius:0;background:#fff;color:var(--ink);padding:6px 12px}.seg button.on{background:var(--accent);color:#fff}
-  .tile{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;width:44px;height:56px;border-radius:8px;background:#fff;border:2px solid #d8cdb8;cursor:pointer;position:relative}
-  .tile .num{font-size:21px;font-weight:800;line-height:1}.tile .suit{font-size:8px;text-transform:uppercase;color:var(--muted);margin-top:2px}
-  .tile.sm{width:34px;height:44px}.tile.sm .num{font-size:17px}
-  .tile.bam .num{color:var(--bam)}.tile.crak .num{color:var(--crak)}.tile.dot .num{color:var(--dot)}.tile.wind .num{color:var(--wind);font-size:17px}
-  .tile.dragon .num{font-size:11px}.tile.dragon.g .num{color:var(--bam)}.tile.dragon.r .num{color:var(--crak)}.tile.dragon.w .num{color:var(--soap)}
-  .tile.flower .num{color:var(--flower);font-size:15px}.tile.joker .num{color:var(--joker);font-size:11px}
+  .tile{display:inline-block;line-height:0;border-radius:8px;border:2px solid transparent;cursor:pointer;position:relative;transition:transform .08s}
+  .tile .mjt-svg{display:block;border-radius:6px}
   .tile.KEEP{border-color:var(--good)}.tile.PASS{border-color:var(--bad)}.tile.FLEX{border-color:var(--warn)}
-  .tile.sel{box-shadow:0 0 0 3px rgba(184,134,42,.4);transform:translateY(-3px)}
-  .tray{display:flex;flex-wrap:wrap;gap:7px}
+  .tile.sel{box-shadow:0 0 0 3px rgba(184,134,42,.45);transform:translateY(-4px)}
+  .tray{display:flex;flex-wrap:nowrap;gap:6px;overflow-x:auto;padding:2px 0 8px}
   .dirbar{display:flex;align-items:center;gap:8px;margin-bottom:5px;font-size:13px}.dirbar .nm{width:64px;font-weight:700}
   .bar{height:10px;background:#e8dfce;border-radius:6px;flex:1;overflow:hidden}.bar span{display:block;height:100%;background:var(--accent)}
   .muted{color:var(--muted);font-size:12.5px}.big{font-size:15px;font-weight:800}
@@ -36,8 +32,8 @@
   .ledchip.faded{opacity:.5;border-style:dashed}
   .lean{font-size:11.5px;color:var(--muted)}.notcol{font-size:11.5px;color:var(--bad)}
   .rec{background:#f1f7ee;border:1px solid var(--good);border-radius:8px;padding:8px;margin-top:8px;font-size:13px}
-  .explain{font-size:11.5px;color:var(--muted);margin-top:2px;display:none}.tilewrap.open .explain{display:block}
-  .tilewrap{border:1px solid var(--line);border-radius:8px;padding:6px;width:122px}
+  .explain{position:absolute;top:100%;left:50%;transform:translateX(-50%);z-index:6;width:210px;margin-top:4px;font-size:11.5px;color:var(--muted);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px;box-shadow:0 6px 16px rgba(60,45,20,.2);display:none}.tilewrap.open .explain{display:block}
+  .tilewrap{position:relative;display:inline-flex;flex-direction:column;align-items:center;gap:2px;flex:0 0 auto}
   table{width:100%;border-collapse:collapse;font-size:12.5px}td,th{text-align:left;padding:4px 6px;border-bottom:1px solid var(--line)}
   th{font-size:9px;text-transform:uppercase;color:var(--muted)}
   .pill{font-size:9px;padding:1px 6px;border-radius:20px;background:#efe6d2;color:var(--muted)}.pill.best{background:var(--good);color:#fff}.pill.dead{background:#e8dfce}
@@ -63,6 +59,7 @@
     </div>
   </div>
 </div>
+<script src="tilefaces.js"></script>
 <script>
 var __modules={}, __cache={};
 function require(name){ if(__cache[name]) return __cache[name].exports; var m={exports:{}}; __cache[name]=m; __modules[name](m, m.exports, require); return m.exports; }
@@ -1664,7 +1661,7 @@ window.Lab={ engine:require('./engine.js'), stats:require('./stats.js'), score:r
     if (c[0] === 'W') return { cls: 'wind', num: c[1], suit: 'wind' };
     return { cls: { B: 'bam', C: 'crak', D: 'dot' }[c[1]], num: c[0], suit: { B: 'Bam', C: 'Crak', D: 'Dot' }[c[1]] };
   }
-  function tileNode(c, sm, cls) { const m = meta(c), d = document.createElement('div'); d.className = 'tile ' + m.cls + (sm ? ' sm' : '') + (cls ? ' ' + cls : ''); d.innerHTML = '<span class="num">' + m.num + '</span><span class="suit">' + m.suit + '</span>'; return d; }
+  function tileNode(c, sm, cls) { const d = document.createElement('div'); d.className = 'tile' + (sm ? ' sm' : '') + (cls ? ' ' + cls : ''); d.title = window.TileFaces.label(c); d.innerHTML = window.TileFaces.svg(c, { w: sm ? 36 : 46 }); return d; }
 
   function deal13() { const p = []; for (const [t, n] of E.fullPool()) for (let i = 0; i < n; i++) p.push(t); for (let i = p.length - 1; i > 0; i--) { const j = (Math.random() * (i + 1)) | 0;[p[i], p[j]] = [p[j], p[i]]; } return p.slice(0, 13); }
   function start() { sess = L.session.newSession({ mode: 'sim', yourRack: deal13(), seed: (Math.random() * 1e9) | 0 }); selected = []; renderAll(); }
