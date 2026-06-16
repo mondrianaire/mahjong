@@ -205,7 +205,7 @@
   function doLoadCard() {
     var pw = el('cardpw').value; if (!pw) return; el('carderr').textContent = 'unlocking…';
     fetch('./card-2026.enc.json').then(function (r) { return r.json(); }).then(function (blob) { return window.CardCrypto.decrypt(blob, pw); })
-      .then(function (txt) { var targets = window.CardInterp.expandCard(JSON.parse(txt)); E.setTargets(targets); realCard = true; el('cardpad').classList.add('hidden'); setCardStat(); rerenderCurrent(); })
+      .then(function (txt) { var targets = window.CardInterp.expandCard(JSON.parse(txt)); E.engine.setTargets(targets); realCard = true; el('cardpad').classList.add('hidden'); setCardStat(); rerenderCurrent(); })
       .catch(function () { el('carderr').textContent = 'Wrong password or card failed to load.'; });
   }
 
