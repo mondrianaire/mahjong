@@ -176,17 +176,17 @@
     practice = false; sess = null; curPass = 0; rack = r; selected = [];
     el('ledger').classList.add('hidden');
     el('tempo').textContent = 'Single-hand analysis · policy ' + E.calibrated.policyVersion;
-    var adv = renderReads(); renderAnalyzeBuilder(adv); scheduleFit();
+    var adv = renderReads(); renderAnalyzeBuilder(adv); fitBoard();
   }
   function renderAnalyzeBuilder(adv) {
     var b = el('passbar'), rec = (adv && adv.pass) || [];
     var recHTML = '<span class="rec">Rec: <b>' + rec.map(lbl).join(' ') + '</b></span>';
-    if (selected.length < 3) { b.innerHTML = slotsHTML() + '<span class="ptext muted">Tap ' + (3 - selected.length) + ' more tile(s), then grade.</span>' + recHTML; scheduleFit(); return; }
+    if (selected.length < 3) { b.innerHTML = slotsHTML() + '<span class="ptext muted">Tap ' + (3 - selected.length) + ' more tile(s), then grade.</span>' + recHTML; fitBoard(); return; }
     var pass = selected.map(function (i) { return rack[i]; });
     b.innerHTML = slotsHTML() + '<span class="actbtns"><button id="grade">Grade pass</button><button id="clr" class="ghost">Clear</button></span><span id="gout" class="verdict"></span>' + recHTML;
     el('grade').addEventListener('click', function () { gradeInto('gout', pass); });
     el('clr').addEventListener('click', function () { selected = []; renderRack(); renderAnalyzeBuilder(adv); });
-    scheduleFit();
+    fitBoard();
   }
 
   // ---------- PRACTICE ----------
@@ -198,7 +198,7 @@
   }
   function syncSession() {
     var st = sess.state(); rack = st.ownRack; curPass = st.passIndex || 0; selected = [];
-    renderReads(); renderLedger(st.ledger); renderAction(st); renderTempo(st); scheduleFit();
+    renderReads(); renderLedger(st.ledger); renderAction(st); renderTempo(st); fitBoard();
   }
   function renderTempo(st) {
     var dirName = { R: 'right', A: 'across', L: 'left' }[st.direction] || '';
@@ -235,7 +235,7 @@
       el('revealBtn').addEventListener('click', revealHands);
       el('againBtn').addEventListener('click', startPractice);
     }
-    scheduleFit();
+    fitBoard();
   }
   function confirmPass() {
     var pass = selected.map(function (i) { return rack[i]; });
