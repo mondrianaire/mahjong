@@ -44,6 +44,43 @@
   function noteSpans(toks) { return toks.map(function (t) { return '<span style="color:' + t.color + '">' + t.text + '</span>'; }).join(''); }
   function realGroups(alt) { return (alt || []).map(function (g) { return { text: g.tiles, color: CARDCOL[g.color] || '#5f5e5a' }; }); }
 
+  // ---- held-tile underlining (honest: marks real tiles you hold under the best suit orientation) ----
+  var ROLEIDX = { green: 0, red: 1, blue: 2 }, DRAGON_OF = { B: 'DG', C: 'DR', D: 'DW' }, SUITS3 = ['B', 'C', 'D'], ILLUS_CAP = 6;
+  function suitInjections(roles) { var res = []; (function rec(i, used, m) { if (i === roles.length) { res.push(Object.assign({}, m)); return; } for (var k = 0; k < 3; k++) { var s = SUITS3[k]; if (used[s]) continue; used[s] = 1; m[roles[i]] = s; rec(i + 1, used, m); used[s] = 0; } })(0, {}, {}); return res; }
+  function realTokens(alt) {
+    return (alt || []).map(function (g) {
+      var color = CARDCOL[g.color] || '#5f5e5a';
+      if (/^F+$/.test(g.tiles)) return { text: g.tiles, color: color, kind: 'flow' };
+      if (/^[NEWS]+$/.test(g.tiles)) return { text: g.tiles, color: color, kind: 'wind' };
+      if (g.composite) return { text: g.tiles, color: color, kind: 'other' };
+      if (g.dragonRole) return { text: g.tiles, color: color, kind: g.dragonRole === 'matching' ? 'dragon' : 'other', drag: g.dragonRole === 'matching' ? 'match' : null, role: ROLEIDX[g.color] };
+      return { text: g.tiles, color: color, kind: 'num', role: ROLEIDX[g.color] };
+    });
+  }
+  function illusTokens(line) { return HN.tokens(line).map(function (t) { var k = t.kind === 'num' ? 'num' : t.kind === 'soap' ? 'soap' : t.kind === 'wind' ? 'wind' : t.kind === 'flow' ? 'flow' : 'other'; return { text: t.text, color: t.color, kind: k, role: t.role }; }); }
+  function tokTiles(tok, sa) {
+    var t = tok.text;
+    if (tok.kind === 'flow') return t.split('').map(function () { return 'FL'; });
+    if (tok.kind === 'wind') return t.split('').map(function (c) { return 'W' + c; });
+    if (tok.kind === 'soap') return t.split('').map(function () { return 'DW'; });
+    if (tok.kind === 'num') { var s = sa[tok.role]; if (s == null) return null; return t.split('').map(function (c) { return c === '0' ? 'DW' : (c + s); }); }
+    if (tok.kind === 'dragon' && tok.drag === 'match') { var s2 = sa[tok.role]; if (s2 == null) return null; return t.split('').map(function () { return DRAGON_OF[s2]; }); }
+    return null;
+  }
+  function litNote(tokens, rk) {
+    if (!rk || !tokens) return (tokens || []).map(function (t) { return '<span style="color:' + t.color + '">' + t.text + '</span>'; }).join('');
+    var pool = {}; rk.forEach(function (c) { if (c !== 'JK') pool[c] = (pool[c] || 0) + 1; });
+    var rs = {}; tokens.forEach(function (t) { if ((t.kind === 'num' || (t.kind === 'dragon' && t.drag === 'match')) && t.role != null) rs[t.role] = 1; });
+    var injs = suitInjections(Object.keys(rs).map(Number)), best = null;
+    injs.forEach(function (sa) {
+      var p = {}; for (var k in pool) p[k] = pool[k]; var per = [], tot = 0;
+      tokens.forEach(function (tok) { var ti = tokTiles(tok, sa); if (!ti) { per.push(null); return; } var fl = ti.map(function (tile) { if ((p[tile] || 0) > 0) { p[tile]--; tot++; return true; } return false; }); per.push(fl); });
+      if (!best || tot > best.tot) best = { per: per, tot: tot };
+    });
+    return tokens.map(function (tok, gi) { var fl = best && best.per[gi], ch = tok.text.split(''), inner = ''; for (var i = 0; i < ch.length; i++) inner += (fl && fl[i]) ? '<u>' + ch[i] + '</u>' : ch[i]; return '<span style="color:' + tok.color + '">' + inner + '</span>'; }).join('');
+  }
+  function covOf(cov, hd) { var c = cov.get(hd.key); return c ? c.coverage : -1; }
+
   // active card -> [ {sections:[ {name,label,hands:[ {key,note,hand?/line?} ]} ]} ]
   function boardModel() {
     if (realCard && cardPayload) {
@@ -77,20 +114,29 @@
     model.forEach(function (col) {
       html += '<div class="bcol">';
       col.sections.forEach(function (sec) {
-        var bestC = -1; sec.hands.forEach(function (hd) { var c = cov && cov.get(hd.key); if (c && c.coverage > bestC) bestC = c.coverage; });
+        var hands = sec.hands, hidden = 0;
+        var bestC = -1; hands.forEach(function (hd) { var c = cov && cov.get(hd.key); if (c && c.coverage > bestC) bestC = c.coverage; });
+        if (!realCard && hands.length > ILLUS_CAP) {            // trim the illustrative placeholder to fit
+          hands = hands.slice();
+          if (cov) hands.sort(function (a, b) { return covOf(cov, b) - covOf(cov, a); });
+          hidden = hands.length - ILLUS_CAP; hands = hands.slice(0, ILLUS_CAP);
+        }
         html += '<div class="bsec ' + (cov ? klass(bestC) : 'cold') + '"><div class="sh"><span>' + sec.label + '</span>' + (cov && bestC >= 0 ? '<span class="cv">' + bestC + '/14</span>' : '') + '</div>';
-        sec.hands.forEach(function (hd) {
+        hands.forEach(function (hd) {
           var c = cov && cov.get(hd.key), cc = c ? c.coverage : null;
           var idx = boardRows.push({ key: hd.key, note: hd.note, label: sec.label, hand: hd.hand, line: hd.line, cov: cc }) - 1;
+          var toks = realCard && hd.hand ? realTokens(hd.hand.A && hd.hand.A[0]) : (hd.line ? illusTokens(hd.line) : null);
+          var noteHTML = toks ? litNote(toks, rack) : hd.note;
           html += '<div class="hrow ' + (cov ? klass(cc) : 'cold') + (leadKey === hd.key && cc != null ? ' lead' : '') + '" data-idx="' + idx + '">' +
-            '<span class="note">' + hd.note + '</span>' + (cc != null ? '<span class="cov">' + cc + '</span>' : '') + '</div>';
+            '<span class="note">' + noteHTML + '</span>' + (cc != null ? '<span class="cov">' + cc + '</span>' : '') + '</div>';
         });
+        if (hidden > 0) html += '<div class="hrow cold morerow">+' + hidden + ' more</div>';
         html += '</div>';
       });
       html += '</div>';
     });
     board.innerHTML = html;
-    board.querySelectorAll('.hrow').forEach(function (row) { row.addEventListener('click', function () { openHandDetail(+row.dataset.idx); }); });
+    board.querySelectorAll('.hrow[data-idx]').forEach(function (row) { row.addEventListener('click', function () { openHandDetail(+row.dataset.idx); }); });
     scheduleFit();
   }
 
