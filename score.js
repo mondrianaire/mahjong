@@ -74,6 +74,19 @@ function shortlist(tiles, objective, window = 4, cap = 60) {
   return { best, cand, committed };
 }
 
+// coverageDetail: best (min-distance) line per section|name across ALL targets,
+// joker-aware. coverage = 14 - d held-equivalent. Drives the lit-up card board.
+function coverageDetail(tiles) {
+  const hp = E.handPool(tiles); const bySec = new Map();
+  for (const t of orderedTargets()) {
+    const d = fastNeeded(t.groups, hp);
+    const key = t.section + ' | ' + t.name;
+    const cur = bySec.get(key);
+    if (!cur || d < cur.d) bySec.set(key, { section: t.section, name: t.name, d, coverage: 14 - d });
+  }
+  return bySec;
+}
+
 function isWinningRack(tiles, candCache) {
   const hp = E.handPool(tiles);
   const list = candCache ? candCache.map(c => c.target) : orderedTargets();
@@ -81,4 +94,4 @@ function isWinningRack(tiles, candCache) {
   return null;
 }
 
-module.exports = { LAMBDA, V, isConcealedKey, objScore, objScoreFromLineMin, bestLine, keepValue, shortlist, isWinningRack };
+module.exports = { LAMBDA, V, isConcealedKey, objScore, objScoreFromLineMin, bestLine, keepValue, shortlist, coverageDetail, isWinningRack };

@@ -11,71 +11,96 @@
 <title>Charleston Lab — Study</title>
 <style>
   :root{--bg:#f4efe6;--panel:#fffdf8;--ink:#241f1a;--muted:#7a7066;--line:#e3d9c8;
-    --bam:#2f7d44;--crak:#b83227;--dot:#2660a4;--soap:#6b6f76;--wind:#4a3f8f;--flower:#c2780a;--joker:#8a3ea0;
-    --accent:#b8862a;--good:#2f7d44;--warn:#b8702a;--bad:#b83227;}
+    --bam:#2f7d44;--crak:#b83227;--dot:#2660a4;--soap:#6b6f76;--wind:#3a3470;--flower:#c2780a;--joker:#8a3ea0;
+    --accent:#b8862a;--good:#2f7d44;--warn:#b8702a;--bad:#b83227;
+    --hot:#3b6d11;--warmc:#ba7517;--coldc:#b3a896;
+    --rowfs:12px;}
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{margin:0;height:100%}
-  body{background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.35;overflow:hidden}
+  body{background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.3;overflow:hidden;overscroll-behavior:none;touch-action:manipulation}
   .hidden{display:none!important}
-  button{font:inherit;font-weight:700;border:1px solid var(--accent);background:var(--accent);color:#fff;padding:7px 11px;border-radius:9px;cursor:pointer}
+  button{font:inherit;font-weight:700;border:1px solid var(--accent);background:var(--accent);color:#fff;padding:5px 9px;border-radius:8px;cursor:pointer;font-size:12px}
   button.ghost{background:#fff;color:var(--ink);border-color:var(--line)}
   button:disabled{opacity:.45}
-  .seg{display:inline-flex;border:1px solid var(--accent);border-radius:9px;overflow:hidden}
-  .seg button{border:0;border-radius:0;background:#fff;color:var(--ink);padding:6px 10px}.seg button.on{background:var(--accent);color:#fff}
+  .seg{display:inline-flex;border:1px solid var(--accent);border-radius:8px;overflow:hidden}
+  .seg button{border:0;border-radius:0;background:#fff;color:var(--ink);padding:5px 9px}.seg button.on{background:var(--accent);color:#fff}
+  .muted{color:var(--muted);font-size:12px}.empty{color:var(--muted);font-size:12px;padding:8px}
 
   /* rotate gate (portrait) */
   #rotate{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;padding:30px;background:var(--bg);z-index:50}
   #rotate .ic{font-size:46px}#rotate h1{margin:0;font-size:20px}#rotate h1 b{color:var(--accent)}#rotate p{margin:0;color:var(--muted);max-width:300px}
   #app{display:none}
-  @media(orientation:landscape){#rotate{display:none}#app{display:flex;flex-direction:column;height:100dvh;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}}
+  @media(orientation:landscape){#rotate{display:none}#app{display:flex;flex-direction:column;height:100dvh;overflow:hidden;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}}
 
   /* header */
-  #bar{display:flex;align-items:center;gap:10px;padding:6px 12px;border-bottom:2px solid var(--accent);flex:0 0 auto}
-  #bar .brand{font-size:15px;font-weight:700}#bar .brand b{color:var(--accent)}
-  #bar .app-version{font-size:10px;color:var(--muted);font-weight:600;opacity:.7}
-  #bar .tempo{font-size:12px;color:var(--muted)}
-  #bar .actions{margin-left:auto;display:flex;gap:7px;align-items:center}
+  #bar{display:flex;align-items:center;gap:8px;padding:5px 11px;border-bottom:2px solid var(--accent);flex:0 0 auto}
+  #bar .brand{font-size:14px;font-weight:700;white-space:nowrap}#bar .brand b{color:var(--accent)}
+  #bar .app-version{font-size:9px;color:var(--muted);font-weight:600;opacity:.7}
+  #bar .tempo{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #bar .actions{margin-left:auto;display:flex;gap:6px;align-items:center;flex:0 0 auto}
+  .chip{font-size:11px;font-weight:700;border-radius:6px;padding:2px 7px;white-space:nowrap}
+  .chip.p{background:#eaf3de;color:#3b6d11}
+  .chip.jk{background:#f7eeda;color:#854f0b}
+  .chip.dir{background:#fff;color:var(--ink);border:1px solid var(--line)}
 
-  /* dashboard 3-pane */
-  #dash{flex:1 1 auto;min-height:0;display:grid;grid-template-columns:1.05fr 1.25fr 1.1fr;gap:8px;padding:8px 12px}
-  .pane{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:9px 11px;display:flex;flex-direction:column;min-height:0}
-  .pane h3{margin:0 0 7px;font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:700;flex:0 0 auto}
-  .scroll{overflow-y:auto;-webkit-overflow-scrolling:touch;min-height:0;flex:1}
-  .muted{color:var(--muted);font-size:12px}.empty{color:var(--muted);font-size:12px}
+  /* the lit-up card board */
+  #board{flex:1 1 auto;min-height:0;display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;padding:6px 10px;overflow:hidden}
+  .bcol{display:flex;flex-direction:column;gap:5px;min-height:0;overflow:hidden}
+  .bsec{background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:3px 6px;display:flex;flex-direction:column;min-height:0;overflow:hidden}
+  .bsec .sh{display:flex;justify-content:space-between;align-items:baseline;font-size:8.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:#fff;background:var(--coldc);border-radius:4px;padding:1px 5px;margin-bottom:2px;flex:0 0 auto}
+  .bsec.hot .sh{background:var(--hot)} .bsec.warm .sh{background:var(--warmc)}
+  .bsec .sh .cv{font-weight:700;opacity:.92}
+  .hrow{display:flex;align-items:center;gap:5px;padding:0.5px 3px;border-left:2px solid transparent;border-radius:3px;cursor:pointer;font-size:var(--rowfs);line-height:1.18}
+  .hrow .note{white-space:nowrap;overflow:hidden;text-overflow:clip;font-variant-numeric:tabular-nums;letter-spacing:.3px}
+  .hrow .note span{font-weight:700;margin-right:4px}
+  .hrow .cov{margin-left:auto;font-size:.82em;font-weight:800;color:var(--muted);flex:0 0 auto}
+  .hrow.hot{border-left-color:var(--hot);background:#eef6e6}.hrow.hot .cov{color:var(--hot)}
+  .hrow.warm{border-left-color:var(--warmc);background:#fbf3e6}.hrow.warm .cov{color:#854f0b}
+  .hrow.cold{opacity:.4}
+  .hrow.lead{box-shadow:0 0 0 1.5px var(--hot) inset}
 
-  .dirbar{display:flex;align-items:center;gap:7px;margin-bottom:5px;font-size:12px}.dirbar .nm{width:58px;font-weight:700}
-  .bar{height:9px;background:#e8dfce;border-radius:5px;flex:1;overflow:hidden}.bar span{display:block;height:100%;background:var(--accent)}
-  .pbig{margin-top:auto;padding-top:8px}.pbig span{font-size:30px;font-weight:800;color:var(--good);line-height:1}.pbig small{display:block;color:var(--muted);font-size:11px}
+  /* pass strip */
+  #passbar{flex:0 0 auto;display:flex;align-items:center;gap:8px;padding:3px 11px;border-top:1px solid var(--line);min-height:0;flex-wrap:wrap}
+  #passbar .empty{padding:3px}
+  .passslots{display:flex;gap:4px}
+  .slot{width:26px;height:34px;border:1.5px dashed var(--line);border-radius:6px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:15px}
+  .slot.full{border-style:solid}
+  .ptext{font-size:11.5px}.ptext b{font-weight:800}
+  .rec{font-size:11px;color:var(--muted)}.rec b{color:var(--ink)}
+  .actbtns{display:flex;gap:5px;flex-wrap:wrap;align-items:center}
+  .verdict{font-size:11.5px}.verdict b{font-weight:800}
+  .spin{font-size:11px;color:var(--muted)}
+  .summ{font-size:12px;display:flex;align-items:center;gap:8px}.summ .v{font-size:20px;font-weight:800;color:var(--good)}
+  .stepbar{display:flex;gap:4px;align-items:center}.stepdot{width:7px;height:7px;border-radius:50%;background:#dccfb4}.stepdot.on{background:var(--accent)}.stepdot.cur{background:var(--accent);box-shadow:0 0 0 3px rgba(184,134,42,.3)}
 
-  .cardhand{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:5px 0;border-bottom:1px solid var(--line)}
-  .cardhand .hsec{font-size:8.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin-top:1px}
-  .cardhand .away{font-size:10.5px;color:var(--muted);white-space:nowrap}
-  .hand-notation{line-height:1.1}
+  /* ledger (practice, slim) */
+  .ledger{flex:0 0 auto;display:flex;gap:7px;padding:2px 11px;overflow-x:auto}
+  .ledseat{flex:0 0 auto;min-width:150px;background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:3px 8px}
+  .ledseat .nm{font-size:8.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700;margin-bottom:1px;display:flex;justify-content:space-between}
+  .ledchips{display:flex;flex-wrap:wrap;gap:2px;align-items:center;min-height:16px}
+  .ledchips .mjt-svg{display:block;border-radius:3px}
+  .ledseat .neg{font-size:9px;color:var(--bad);margin-top:1px}
+  .ledseat .empty2{font-size:9.5px;color:var(--muted)}
 
-  .passslots{display:flex;gap:5px;margin-bottom:8px}
-  .slot{width:34px;height:45px;border:1.5px dashed var(--line);border-radius:7px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:18px}
-  .verdict{font-size:12px;margin:4px 0}.verdict b{font-weight:800}
-  .rec{font-size:11.5px;color:var(--muted);margin-top:6px}
-
-  /* rack */
-  #rackwrap{flex:0 0 auto;padding:4px 12px 8px}
-  .rackhead{display:flex;justify-content:space-between;font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
-  .rack{display:flex;flex-wrap:nowrap;gap:5px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px}
-  .tile{position:relative;line-height:0;border-radius:9px;border:2px solid transparent;flex:0 0 auto;cursor:pointer}
-  .tile .mjt-svg{display:block;border-radius:7px}
+  /* rack (slim) */
+  #rackwrap{flex:0 0 auto;padding:3px 11px 6px}
+  .rackhead{display:flex;justify-content:space-between;font-size:9px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
+  .rack{display:flex;flex-wrap:nowrap;gap:4px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px;justify-content:center}
+  .tile{position:relative;line-height:0;border-radius:7px;border:2px solid transparent;flex:0 0 auto;cursor:pointer}
+  .tile .mjt-svg{display:block;border-radius:6px}
   .tile.KEEP{border-color:var(--good)}.tile.PASS{border-color:var(--bad)}.tile.FLEX{border-color:var(--warn)}
-  .tile.sel{box-shadow:0 0 0 3px rgba(184,134,42,.5);transform:translateY(-4px)}
-  .tag{position:absolute;bottom:-1px;left:50%;transform:translateX(-50%);font-size:8px;font-weight:800;letter-spacing:.04em;padding:0 3px;border-radius:4px;background:#fff;color:var(--muted)}
+  .tile.sel{box-shadow:0 0 0 3px rgba(184,134,42,.5);transform:translateY(-3px)}
+  .tag{position:absolute;bottom:-1px;left:50%;transform:translateX(-50%);font-size:7px;font-weight:800;letter-spacing:.04em;padding:0 3px;border-radius:4px;background:#fff;color:var(--muted)}
   .tag.KEEP{color:var(--good)}.tag.PASS{color:var(--bad)}.tag.FLEX{color:var(--warn)}
 
   /* overlays */
   .overlay{position:fixed;inset:0;background:rgba(36,31,26,.5);z-index:30;display:flex;align-items:center;justify-content:center;padding:14px}
-  .pad{background:var(--bg);border-radius:14px;padding:12px 14px;max-width:760px;width:100%;max-height:94dvh;overflow:auto}
+  .pad{background:var(--bg);border-radius:14px;padding:12px 14px;max-width:620px;width:100%;max-height:94dvh;overflow:auto}
   .pad h2{margin:0 0 8px;font-size:15px}
   .padrow{display:flex;align-items:center;gap:5px;margin-bottom:6px}.padrow .lab{width:42px;font-size:10px;color:var(--muted);text-transform:uppercase;flex:0 0 auto}
   .padrow .tile{cursor:pointer}
   .padfoot{display:flex;align-items:center;gap:10px;margin-top:8px}
-  .building{display:flex;flex-wrap:nowrap;gap:4px;overflow-x:auto;flex:1;min-height:50px;border:1px dashed var(--line);border-radius:8px;padding:5px}
+  .building{display:flex;flex-wrap:nowrap;gap:4px;overflow-x:auto;flex:1;min-height:46px;border:1px dashed var(--line);border-radius:8px;padding:5px}
 
   .sheet{position:fixed;left:0;right:0;bottom:0;z-index:40;background:var(--panel);border-top:2px solid var(--accent);border-radius:16px 16px 0 0;padding:14px 18px calc(env(safe-area-inset-bottom) + 16px);box-shadow:0 -6px 20px rgba(60,45,20,.22)}
   .sheet .sh-top{display:flex;align-items:center;gap:10px;margin-bottom:6px}
@@ -83,27 +108,14 @@
   .sh-act.KEEP{color:var(--good);border-color:var(--good)}.sh-act.PASS{color:var(--bad);border-color:var(--bad)}.sh-act.FLEX{color:var(--warn);border-color:var(--warn)}
   .sheet .row2{font-size:12.5px;margin:3px 0}.sheet .k{color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.04em}
   .sheet .close{position:absolute;top:10px;right:14px;background:none;border:0;color:var(--muted);font-size:20px;padding:4px}
-  .spin{font-size:12px;color:var(--muted)}
-  .ledger{flex:0 0 auto;display:flex;gap:8px;padding:2px 12px 4px;overflow-x:auto}
-  .ledseat{flex:0 0 auto;min-width:158px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:5px 9px}
-  .ledseat .nm{font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700;margin-bottom:2px;display:flex;justify-content:space-between}
-  .ledchips{display:flex;flex-wrap:wrap;gap:3px;align-items:center;min-height:20px}
-  .ledchips .mjt-svg{display:block;border-radius:3px}
-  .ledseat .neg{font-size:9.5px;color:var(--bad);margin-top:2px}
-  .ledseat .empty2{font-size:10px;color:var(--muted)}
-  .stepbar{display:flex;gap:5px;align-items:center}.stepdot{width:8px;height:8px;border-radius:50%;background:#dccfb4}.stepdot.on{background:var(--accent)}.stepdot.cur{background:var(--accent);box-shadow:0 0 0 3px rgba(184,134,42,.3)}
-  .actbtns{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
-  .summ{font-size:13px}.summ .v{font-size:22px;font-weight:800}
-  #cardview .cardbig{background:var(--bg);border-radius:14px;width:100%;max-width:1100px;max-height:94dvh;display:flex;flex-direction:column;padding:10px 12px}
-  .cardhdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}.cardhdr b{color:var(--accent);font-size:15px}
-  .cardcols{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;overflow-y:auto;-webkit-overflow-scrolling:touch}
-  .cardcol{display:flex;flex-direction:column;gap:8px;min-width:0}
-  .cardsec{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:7px 9px}
-  .cardsecname{font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin-bottom:5px;border-bottom:1px solid var(--line);padding-bottom:3px;display:flex;justify-content:space-between}
-  .cardsecname span{color:var(--muted);font-weight:600}
-  .cardhandrow{font-size:12px;line-height:1.45;padding:3px 0;border-bottom:1px solid #efe7d6;display:flex;justify-content:space-between;gap:8px;align-items:baseline}
-  .cardhandrow .note{letter-spacing:.4px;font-variant-numeric:tabular-nums}
-  .cardval{font-size:9px;color:var(--muted);white-space:nowrap}.orsep{font-size:8px;color:var(--muted)}
+
+  /* hand-detail overlay */
+  #handview .pad{max-width:560px}
+  .hd-note{font-size:18px;margin:4px 0 8px}
+  .hd-tiles{display:flex;flex-wrap:wrap;gap:4px;margin:6px 0}
+  .hd-tiles .mjt-svg{display:block;border-radius:6px}
+  .hd-meta{font-size:12px;color:var(--muted)}.hd-meta b{color:var(--ink)}
+  .orsep{font-size:11px;color:var(--muted);margin:0 4px}
 </style>
 </head>
 <body>
@@ -116,6 +128,9 @@
   <div id="app">
     <header id="bar">
       <span class="brand">Charleston <b>Lab</b> <span class="app-version" title="version"></span></span>
+      <span class="chip dir" id="dirchip" hidden></span>
+      <span class="chip p" id="pchip" hidden></span>
+      <span class="chip jk" id="jkchip" hidden></span>
       <span class="tempo" id="tempo"></span>
       <span class="actions">
         <span class="seg" id="obj"><button data-o="WINS" class="on">Wins</button><button data-o="POINTS">Points</button></span>
@@ -127,21 +142,9 @@
       </span>
     </header>
 
-    <div id="dash">
-      <section class="pane">
-        <h3>Direction</h3>
-        <div id="dir" class="scroll"><div class="empty">Deal or build a hand to begin.</div></div>
-        <div class="pbig"><span id="pwin">—</span><small id="pwinsub">P(reach mahjong)</small></div>
-      </section>
-      <section class="pane">
-        <h3>Closest hands · color = suit group</h3>
-        <div id="hands" class="scroll"><div class="empty">—</div></div>
-      </section>
-      <section class="pane">
-        <h3>Your pass — tap 3 in the rack</h3>
-        <div id="builder" class="scroll"><div class="empty">—</div></div>
-      </section>
-    </div>
+    <div id="board"><div class="empty" id="boardempty">Deal, build, or start practice to light up the card.</div></div>
+
+    <div id="passbar"><div class="empty">Deal or build a hand, then tap 3 tiles in your rack to build a pass.</div></div>
 
     <div id="ledger" class="ledger hidden"></div>
 
@@ -172,18 +175,23 @@
   <div id="cardpad" class="overlay hidden">
     <div class="pad" style="max-width:380px">
       <h2>Unlock the 2026 card</h2>
-      <div class="muted" style="margin-bottom:8px">Enter the group password to load the real NMJL 2026 hands. Until unlocked, the app uses an illustrative set.</div>
+      <div class="muted" style="margin-bottom:8px">Enter the group password to load the real NMJL 2026 hands. Until unlocked, the board shows an illustrative set.</div>
       <input id="cardpw" type="password" autocomplete="off" style="width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;font-size:15px;background:#fff" placeholder="password">
       <div id="carderr" style="color:var(--bad);font-size:11px;margin-top:6px"></div>
       <div class="padfoot"><button id="cardgo">Unlock</button><button id="cardcancel" class="ghost">Cancel</button></div>
     </div>
   </div>
-  <div id="cardview" class="overlay hidden">
-    <div class="cardbig">
-      <div class="cardhdr"><b>NMJL 2026 — your card</b><span class="muted" style="font-size:10px;flex:1;margin-left:10px">color = suit group · X exposed · C concealed · white dragon = 0</span><button id="cvclose" class="ghost">Close</button></div>
-      <div class="cardcols" id="cardcols"></div>
+
+  <div id="handview" class="overlay hidden">
+    <div class="pad">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <h2 id="hdname" style="margin:0">Hand</h2>
+        <button id="hdclose" class="ghost">Close</button>
+      </div>
+      <div id="hdbody"></div>
     </div>
   </div>
+
   <script src="./dist/charleston-engine.global.js"></script>
   <script src="./tilefaces.js"></script>
   <script src="./handnotation.js"></script>
