@@ -103,7 +103,7 @@
     function over() { var o = false; board.querySelectorAll('.bcol').forEach(function (c) { if (c.scrollHeight > c.clientHeight + 1) o = true; }); return o; }
     board.style.setProperty('--rowfs', fs + 'px');
     var guard = 0;
-    while (over() && fs > 6.5 && guard < 60) { fs -= 0.5; board.style.setProperty('--rowfs', fs + 'px'); guard++; }
+    while (over() && fs > 6 && guard < 60) { fs -= 0.5; board.style.setProperty('--rowfs', fs + 'px'); guard++; }
   }
 
   // ---------- top-bar chips ----------
@@ -129,7 +129,7 @@
     sortedIdx().forEach(function (i) {
       var c = rack[i], a = adviceByTile[c] || { action: 'FLEX' }, d = document.createElement('div');
       d.className = 'tile ' + a.action + (selected.indexOf(i) >= 0 ? ' sel' : '');
-      d.innerHTML = TF.svg(c, { w: 36 }) + '<span class="tag ' + a.action + '">' + a.action + '</span>';
+      d.innerHTML = TF.svg(c, { w: 30 }) + '<span class="tag ' + a.action + '">' + a.action + '</span>';
       d.addEventListener('click', function () { openSheet(i); });
       wrap.appendChild(d);
     });

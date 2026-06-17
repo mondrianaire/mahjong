@@ -46,11 +46,11 @@
   /* the lit-up card board */
   #board{flex:1 1 auto;min-height:0;display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;padding:6px 10px;overflow:hidden}
   .bcol{display:flex;flex-direction:column;gap:5px;min-height:0;overflow:hidden}
-  .bsec{background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:3px 6px;display:flex;flex-direction:column;min-height:0;overflow:hidden}
+  .bsec{background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:2px 6px;display:flex;flex-direction:column;flex:0 0 auto}
   .bsec .sh{display:flex;justify-content:space-between;align-items:baseline;font-size:8.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:#fff;background:var(--coldc);border-radius:4px;padding:1px 5px;margin-bottom:2px;flex:0 0 auto}
   .bsec.hot .sh{background:var(--hot)} .bsec.warm .sh{background:var(--warmc)}
   .bsec .sh .cv{font-weight:700;opacity:.92}
-  .hrow{display:flex;align-items:center;gap:5px;padding:0.5px 3px;border-left:2px solid transparent;border-radius:3px;cursor:pointer;font-size:var(--rowfs);line-height:1.18}
+  .hrow{display:flex;align-items:center;gap:5px;padding:0 3px;border-left:2px solid transparent;border-radius:3px;cursor:pointer;font-size:var(--rowfs);line-height:1.12}
   .hrow .note{white-space:nowrap;overflow:hidden;text-overflow:clip;font-variant-numeric:tabular-nums;letter-spacing:.3px}
   .hrow .note span{font-weight:700;margin-right:4px}
   .hrow .cov{margin-left:auto;font-size:.82em;font-weight:800;color:var(--muted);flex:0 0 auto}
@@ -83,8 +83,8 @@
   .ledseat .empty2{font-size:9.5px;color:var(--muted)}
 
   /* rack (slim) */
-  #rackwrap{flex:0 0 auto;padding:3px 11px 6px}
-  .rackhead{display:flex;justify-content:space-between;font-size:9px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
+  #rackwrap{flex:0 0 auto;padding:2px 11px 4px}
+  .rackhead{display:flex;justify-content:space-between;font-size:8.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
   .rack{display:flex;flex-wrap:nowrap;gap:4px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px;justify-content:center}
   .tile{position:relative;line-height:0;border-radius:7px;border:2px solid transparent;flex:0 0 auto;cursor:pointer}
   .tile .mjt-svg{display:block;border-radius:6px}
